@@ -1,0 +1,1 @@
+project(${CMAKE_PROJECT_NAME})               # Name of project
