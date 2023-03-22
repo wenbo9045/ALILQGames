@@ -40,7 +40,7 @@ class DiffDriveCost : public Cost {
         }
 
         void TerminalCostGradient(VectorXd &lx, const VectorXd& x) override{
-            assert(lx.rows() == 4);
+            assert(lx.rows() == n_dims);
 
             lx = QN*(x -xgoal);
         }

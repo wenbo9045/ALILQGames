@@ -9,17 +9,26 @@ class ALILQGames
 {
     public:
         // Pass a Nplayer Model system, and a vector of costs of each player
-        ALILQGames(NPlayerModel* ptr_model, std::vector<Cost*> ptr_costs)
+        // ALILQGames(NPlayerModel* ptr_model, std::vector<Cost*> ptr_costs)
+        // {
+        //     Nmodel.reset(ptr_model);                 // reset shared pointer to the model 
+        //     Ncost = ptr_costs;
+        //     dt = Nmodel->dt;
+        // }
+
+        // std::shared_ptr<NPlayerModel> Nmodel;                   // N player model;
+
+        // std::vector<Cost*> Ncost;                   // Might make it a shared pointer or pass by reference
+        // //std::shared_ptr<Cost> cost;
+        ALILQGames(NPlayerModel* ptr_model, std::vector<std::shared_ptr<Cost>> ptr_costs) : pc(move(ptr_costs))
         {
             Nmodel.reset(ptr_model);                 // reset shared pointer to the model 
-            Ncost = ptr_costs;
             dt = Nmodel->dt;
         }
 
-        std::shared_ptr<NPlayerModel> Nmodel;                   // N player model;
+        std::vector<std::shared_ptr<Cost>> pc;  
+        std::shared_ptr<NPlayerModel> Nmodel;                   // N player model; // change this
 
-        std::vector<Cost*> Ncost;                   // Might make it a shared pointer or pass by reference
-        //std::shared_ptr<Cost> cost;
 
         ALILQGames();                                     // Constructor
 
@@ -36,6 +45,8 @@ class ALILQGames
         void recedingHorizon(const VectorXd& x0);
 
         VectorXd getState(int k);
+
+        VectorXd getControl(int k);
 
         double dt;                                   // delta t
 
@@ -74,9 +85,10 @@ class ALILQGames
         // Backward pass stuff
         std::vector<MatrixXd> P;                                   // value matrix at final step is only cost/state hessian
         std::vector<VectorXd> p;                        
-        MatrixXd S(Nu, Nu);                                        // Same as S in the document
-        MatrixXd F_k(Nx, Nx);                                      // Placeholder for eqn readibility
-        MatrixXd YK(Nu, Nx);                                       // Right hand side of system of linear equations for K                              
-        VectorXd Yd(Nu);                                           // Right hand side of system of linear equations for d
+        MatrixXd S;                                        // Same as S in the document
+        MatrixXd F_k;                                      // Placeholder for eqn readibility
+        VectorXd beta_k;
+        MatrixXd YK;                                       // Right hand side of system of linear equations for K                              
+        VectorXd Yd;                                           // Right hand side of system of linear equations for d
 
 };

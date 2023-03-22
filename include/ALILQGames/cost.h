@@ -9,6 +9,8 @@ using Eigen::MatrixXd;
 
 struct Cost
 {
+    virtual ~Cost() = default;
+
     virtual double StageCost(const VectorXd &x, const VectorXd &u) = 0;                          // cost function
 
     virtual double TerminalCost(const VectorXd &x) = 0;                                          // cost function

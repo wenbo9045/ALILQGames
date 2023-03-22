@@ -19,7 +19,7 @@ class PointMass : public Model {
             dt = dtin;
         }
     
-        VectorXd dynamics(const VectorXd &x, const VectorXd &u) override {
+        VectorXd dynamics(const VectorXd& x, const VectorXd& u) override {
             VectorXd xdot(nx);
             // ẋ₁ = x[3]
             // ẍ₁ = -(c/m)*ẋ₁ + u[1]/(m)   
@@ -33,7 +33,7 @@ class PointMass : public Model {
         }
 
 
-        void stateJacob(MatrixXd &fx, const VectorXd& x, const VectorXd& u) override {
+        void stateJacob(Eigen::Ref<MatrixXd> fx, const VectorXd& x, const VectorXd& u) override {
             assert(fx.rows() == nx);
             assert(fx.cols() == nx);
 
@@ -47,7 +47,7 @@ class PointMass : public Model {
             fx = fx*dt + MatrixXd::Identity(nx, nx);
         }
 
-        void controlJacob(MatrixXd &fu, const VectorXd& x, const VectorXd& u) override {
+        void controlJacob(Eigen::Ref<MatrixXd> fu, const VectorXd& x, const VectorXd& u) override {
             assert(fu.rows() == nx);
             assert(fu.cols() == nu);
 
