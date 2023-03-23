@@ -4,11 +4,14 @@
 void ALILQGames::init(int Horizon)
 {
     H = Horizon;
+    
+    // populate terms for entire horizon
     x_k.resize(H);
     u_k.resize(H-1);
     K_k.resize(H-1);
     d_k.resize(H-1);
-    
+    lambda.resize(H);
+
     nx = Nmodel -> nx;                                      // Number of states for agent i
     nu = Nmodel -> nu;                                      // Number of controls for agent i
     Nx = Nmodel -> Nx;                                      // Total number of states for all agents
@@ -137,7 +140,7 @@ void ALILQGames::backward_pass()
             pc[i]->StageCostGradient(lx[i], lu[i], x_k[k], u_k[k]);
             pc[i]->StageCostHessian(lxx[i], luu[i], x_k[k], u_k[k]); 
 
-
+            //augmentedLagrangian(lx[i],)
             // S = [(R¹¹ + B¹ᵀ P¹ B¹)     (B¹ᵀ P¹ B²)     ⋅⋅⋅      (B¹ᵀ P¹ Bᴺ)   ;
             //         (B²ᵀ P² B¹)     (R²² + B²ᵀ P² B²)  ⋅⋅⋅      (B²ᵀ P² Bᴺ)   ;
             //              ⋅                  ⋅        ⋅                ⋅       ;

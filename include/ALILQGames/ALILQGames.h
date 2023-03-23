@@ -56,22 +56,32 @@ class ALILQGames
 
     private:
 
-        std::vector<VectorXd> x_k;           // States over the entire Horizon 
+        std::vector<VectorXd> x_k;                  // States over the entire Horizon 
 
-        std::vector<VectorXd> u_k;           // Control inputs over the entire Horizon
+        std::vector<VectorXd> u_k;                  // Control inputs over the entire Horizon
 
-        std::vector<VectorXd> x_hat;         // previous state rollout
-        std::vector<VectorXd> u_hat;         // previous controls
+        std::vector<VectorXd> lambda;               // Dual variable for ALL agents (here we are assuming no equality constraints)
 
-        std::vector<MatrixXd> K_k;           // Proportional gain
+        VectorXd c;                                 // inequality constraints
 
-        std::vector<VectorXd> d_k;           // Feedforward Gain (AKA gradient)
+        MatrixXd cx, cu;                             // constraint jacobian
 
-        MatrixXd fx, fu;        // Dynamics Jacobian
+        std::vector<VectorXd> x_hat;                // previous state rollout
+        std::vector<VectorXd> u_hat;                // previous controls
 
-        std::vector<VectorXd> lx,lu;         // Cost Gradients
+        std::vector<MatrixXd> K_k;                  // Proportional gain
 
-        std::vector<MatrixXd> lxx, luu, lux;       // Cost Hessians
+        std::vector<VectorXd> d_k;                  // Feedforward Gain (AKA gradient)
+
+        MatrixXd fx, fu;                            // Dynamics Jacobian
+
+        std::vector<VectorXd> lx,lu;                // Cost Gradients
+
+        std::vector<MatrixXd> lxx, luu, lux;        // Cost Hessians
+
+        std::vector<VectorXd> Lx, Lu;               // Augmented Lagrangian gradients
+
+        std::vector<MatrixXd> Lxx, Luu, Lux;        // Augmented Lagrangian hessian
 
         double max_grad;
 

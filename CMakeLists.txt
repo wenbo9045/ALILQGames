@@ -14,6 +14,12 @@ endif()
 add_subdirectory(include)
 add_subdirectory(src)
 
+# Find and build third party libraries.
+add_subdirectory(thirdpartylibs)
+
+# Add the source directories to the search path so cmake can find our headers.
+include_directories(${CMAKE_SOURCE_DIR}/include ${imgui_SOURCE_DIR}/include ${glad_SOURCE_DIR}/include)
+
 # Option creates a variable and stores an initial value to it unless you overwrite it in cmd line
 option(BUILD_EXAMPLES "Build library examples" ON) 
 option(BUILD_TESTS "Build library tests" ON)

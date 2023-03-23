@@ -14,6 +14,8 @@ add_executable(main main.cpp)           # target
 
 add_executable(pointmassEx pointmassEx.cpp)
 
+add_executable(pointmass_imgui pointmass_imgui.cpp)
+
 # add_executable(tbot_example tbot_example.cpp)           # target
 
 
@@ -30,9 +32,10 @@ target_link_libraries(pointmassEx
     matplotlibcpp17::matplotlibcpp17
     ALILQGames)
 
-# Link executable to ILQR library
-# target_link_libraries(tbot_example
-#     PRIVATE                             # private dependency of the main executable (exectubales are usually private)
-#     ${Python3_LIBRARIES}
-#     ALILQGames)
+target_link_libraries(pointmass_imgui
+    PRIVATE                             # private dependency of the main executable (exectubales are usually private)
+    imgui 
+    glfw 
+    glad
+    ALILQGames)
 
