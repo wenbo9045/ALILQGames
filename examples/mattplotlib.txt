@@ -1,0 +1,43 @@
+#include <matplotlibcpp17/pyplot.h>
+#include <matplotlibcpp17/animation.h>
+using namespace matplotlibcpp17;
+using matplotlibcpp17::animation::ArtistAnimation;
+    // ALILQGames* alilqgame = new ALILQGames(Npm, pc);                 // Declare pointer to the ILQR class.
+
+    // int H = 100;
+
+    // alilqgame->init(H);
+
+    // auto t0 = high_resolution_clock::now();
+    // alilqgame -> solve(x0);
+    // auto t1 = high_resolution_clock::now();
+
+    // /* Getting number of milliseconds as a double. */
+    // duration<double, std::milli> ms_double = t1 - t0;
+    // std::cout << ms_double.count() << "ms\n";
+
+    // pybind11::scoped_interpreter guard{};
+    // auto plt = matplotlibcpp17::pyplot::import();
+
+    // VectorXd X_t(8);
+    // VectorXd U_t(4);
+
+    
+    // std::vector<double> x1, y1, x2, y2, u11, u12, u21, u22;
+    // std::vector<double> ts;
+
+    // for (int k = 0; k < H-1; k++) {
+    //     X_t = alilqgame->getState(k);
+    //     U_t = alilqgame->getControl(k);
+    //     u11.push_back(U_t[0]);
+    //     //Y.push_back(X_t[1]);
+    //     u12.push_back(U_t[1]);
+    // }
+
+    // plt.plot(Args(u11),
+    //        Kwargs("color"_a = "blue", "linewidth"_a = 1.0));
+    
+    // plt.plot(Args(u12),
+    //        Kwargs("color"_a = "red", "linewidth"_a = 1.0));
+
+    // plt.show();

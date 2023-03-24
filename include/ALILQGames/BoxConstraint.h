@@ -1,7 +1,7 @@
 #pragma once
-#include "constraints.h"
+#include "GlobalConstraints.h"
 
-class BoxConstraint : public Constraints {
+class BoxConstraint : public GlobalConstraints {
 
     public:
         BoxConstraint(VectorXd& umin_in, VectorXd& umax_in, VectorXd& xmin_in, VectorXd& xmax_in)
@@ -13,13 +13,13 @@ class BoxConstraint : public Constraints {
             nx = xmax_in.rows();
             nu = umax_in.rows();
 
-            cx = MatrixXd::Zero(2*(nx + nu), nx);
-            cx.block(0,0,nx,nx) = MatrixXd::Identity(nx, nx);
-            cx.block(nx+nu,0,nx,nx) = -MatrixXd::Identity(nx, nx);
+            Cx = MatrixXd::Zero(2*(nx + nu), nx);
+            Cx.block(0,0,nx,nx) = MatrixXd::Identity(nx, nx);
+            Cx.block(nx+nu,0,nx,nx) = -MatrixXd::Identity(nx, nx);
 
-            cu = MatrixXd::Zero(2*(nx + nu), nu);
-            cu.block(nx,0,nu,nu) = MatrixXd::Identity(nu, nu);
-            cu.block(2*nx + nu,0, nu , nu) = -MatrixXd::Identity(nu, nu);
+            Cu = MatrixXd::Zero(2*(nx + nu), nu);
+            Cu.block(nx,0,nu,nu) = MatrixXd::Identity(nu, nu);
+            Cu.block(2*nx + nu,0, nu , nu) = -MatrixXd::Identity(nu, nu);
 
             // asserting that you need to provide constraints for all states and inputs 
             assert(xmin_in.rows() == nx);
@@ -70,14 +70,17 @@ class BoxConstraint : public Constraints {
             }
 
             // std::cout << "\nc2\n" << c << "\n";
-
         }
+        
+        void StateConstraintJacob(MatrixXd& cx, const VectorXd& x) override {cx = Cx;}
+
+        void ControlConstraintJacob(MatrixXd& cu,const VectorXd& u) override {cu = Cu;} 
 
     private:
         VectorXd umin, umax, xmin, xmax;
         // VectorXd Z;
         // VectorXd d;
-        MatrixXd cx,cu;
+        MatrixXd Cx,Cu;
         // MatrixXd C;
         int nx, nu;
 

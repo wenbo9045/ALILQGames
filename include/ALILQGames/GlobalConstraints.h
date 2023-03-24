@@ -6,9 +6,9 @@
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
 
-struct Constraints
+struct GlobalConstraints
 {
-    virtual ~Constraints() = default;
+    virtual ~GlobalConstraints() = default;
 
     virtual void StateConstraint(VectorXd& c, const VectorXd& x) {}
 

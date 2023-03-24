@@ -49,6 +49,7 @@ public:
 
         ImGui::Begin("2D Visualizer Window");
 
+
 		const float agent_radius = 30.0;
         constexpr float kMinGreen = 0.15;
         constexpr float kMaxGreen = 1.0 - kMinGreen;
