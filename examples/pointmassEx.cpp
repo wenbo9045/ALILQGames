@@ -59,7 +59,7 @@ int main(){
 
     int nx = 4;
     int nu = 2;
-    int n_agents = 3;
+    int n_agents = 4;
     VectorXd umin = -5.0*VectorXd::Ones(8);
     VectorXd umax =  5.0*VectorXd::Ones(8);
 
@@ -71,7 +71,7 @@ int main(){
     r_avoid(0) = 1.0;
     r_avoid(1) = 1.0;
     r_avoid(2) = 1.0;
-    // r_avoid(3) = 1.0;
+    r_avoid(3) = 1.0;
 
 
     VectorXd cinq = VectorXd::Zero(n_agents*(n_agents - 1));
@@ -79,10 +79,13 @@ int main(){
     VectorXd xtest(n_agents*nx);
     xtest << 1.5, 2.5, 0.0, 0.0, 
             1.2, 2.4, 0.0, 0.0,
-            2.3, 2.1, 0.0, 0.0;
-            // 1.5, 1.9, 0.0, 0.0;
+            2.3, 2.1, 0.0, 0.0,
+            1.5, 1.9, 0.0, 0.0;
     VectorXd lx = VectorXd::Zero(n_agents*nx);
+    MatrixXd lxx = MatrixXd::Zero(n_agents*nx, n_agents*nx);
+
     VectorXd lu = VectorXd::Zero(n_agents*nu);
+    MatrixXd luu = MatrixXd::Zero(n_agents*nu, n_agents*nu);
 
 
     
@@ -95,7 +98,9 @@ int main(){
 
     collision->StageCostGradient(0, lx, lu, xtest, u);
 
-    std::cout << "lx " << lx << "\n";
+    collision->StageCostHessian(1, lxx, luu, xtest, u);
+
+    std::cout << "lxx \n" << lxx << "\n";
 
     // GlobalConstraints* cg = new BoxConstraint(umin, umax, xmin, xmax);
 

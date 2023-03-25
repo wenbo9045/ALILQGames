@@ -98,14 +98,93 @@ class CollisionCost2D : public Cost {
         }
 
         void StageCostHessian(const int i, MatrixXd &lxx, MatrixXd &luu, const VectorXd& x, const VectorXd& u) override {
-            assert(lxx.rows() == n_dims);
-            assert(lxx.cols() == n_dims);
-            assert(luu.rows() == m_dims);
-            assert(luu.cols() == m_dims);
+            // assert(lxx.rows() == n_dims);
+            // assert(lxx.cols() == n_dims);
+            // assert(luu.rows() == m_dims);
+            // assert(luu.cols() == m_dims);
 
-            lxx = Q;
-            luu = R;         
+       
+            const int nx = x.rows()/n_ag;
+            double distance;
+            double penalty_coll;
+            double dx, dy;
 
+            // lxx = Q;
+            // luu = R;  
+
+            for (int j=0; j < n_ag; j++)
+            {
+                if (j != i)
+                {
+                    dx = (x(nx*i) - x(nx*j));
+                    dy = (x(nx*i+1) - x(nx*j+1));
+
+                    distance = std::sqrt(dx*dx + dy*dy);
+                    if (distance <= r(j))
+                    {
+                        int xi = nx*i;
+                        int yi = nx*i +1;
+                        int xj = nx*j;
+                        int yj = nx*j + 1;
+                        float dxdx = dx*dx;
+                        float dydy = dy*dy;
+                        float dxdy = dx*dy;
+                        float denom = dxdx + dydy;
+
+                        lxx(xi, xi) -= rho * (r(j) * (distance - dxdx/distance)/(denom) - 1);                   // ∂²c/∂xᵢ∂xᵢ 
+                        lxx(yi, yi) -= rho * (r(j) * (distance - dydy/distance)/(denom) - 1);                   // ∂²c/∂yᵢ∂yᵢ
+                        lxx(xi, yi) -= rho * (r(j) * (-dxdy/distance)/(denom));                                 // ∂²c/∂xᵢ∂yᵢ
+                        lxx(yi, xi) = lxx(xi, yi);
+                        // lxx(yi, xi) -= rho * (r(j) * (-dxdy/distance)/(denom));                                 // ∂²c/∂yᵢ∂xᵢ, lxx(nx*i, nx*i+1);
+                        
+                        lxx(xi, xj) += rho * (r(j) * (distance - dxdx/distance)/(denom) - 1);                   // ∂²c/∂xᵢ∂xⱼ 
+                        lxx(xj, xi) += rho * (r(j) * (distance - dxdx/distance)/(denom) - 1);                   // ∂²c/∂xⱼ∂xᵢ, lxx(nx*i, nx*j);
+                        lxx(xi, yj) += rho * (r(j) * (-dxdy/distance)/(denom));                                 // ∂²c/∂xᵢ∂yⱼ
+                        lxx(yj, xi) = lxx(xi, yj);
+                        // lxx(yj, xi) += rho * (r(j) * (-dxdy/distance)/(denom));                                 // ∂²c/∂yⱼ∂xᵢ, lxx(nx*i, nx*j + 1) 
+
+                        lxx(yi, xj) += rho * (r(j) * (-dxdy/distance)/(denom));                                 // ∂²c/∂yᵢ∂xⱼ       
+                        lxx(xj, yi) = lxx(yi, xj);
+                        // lxx(xj, yi) += rho * (r(j) * (-dxdy/distance)/(denom));                                 // ∂²c/∂xⱼ∂yᵢ, lxx(nx*i+1,nx*j)
+                        
+                        lxx(xj, xj) -= rho * (r(j) * (distance - dxdx/distance)/(denom) - 1);                   // ∂²c/∂xⱼ∂xⱼ    
+                        lxx(yj, yj) -= rho * (r(j) * (distance - dydy/distance)/(denom) - 1);                   // ∂²c/∂yⱼ∂yⱼ
+                        
+                        lxx(yj, xj) -= rho * (r(j) * (-dxdy/distance)/(denom));                                 // ∂²c/∂yⱼ∂xⱼ
+                        lxx(xj, yj) = lxx(yj, xj);
+                        // lxx(xj, yj) -= rho * (r(j) * (-dxdy/distance)/(denom));                                 // ∂²c/∂xⱼ∂yⱼ, lxx(nx*j + 1, nx*j)
+                                                                                                                        
+                        lxx(yi, yj) -= rho * (r(j) * (-distance + dydy/distance)/(denom) + 1);                  // ∂²c/∂yⱼ∂yᵢ
+                        lxx(yj, yi) = lxx(yi, yj);
+                        // lxx(yj, yi) -= rho * (r(j) * (-distance + dydy/distance)/(denom) + 1);                  // ∂²c/∂yᵢ∂yⱼ,  lxx(nx*i + 1, nx*j + 1)
+
+
+                        // lxx(nx*i, nx*i) -= rho * (r(j) * (distance - dx*dx/distance)/(dx*dx + dy*dy) - 1);              // ∂²c/∂xᵢ∂xᵢ 
+                        // lxx(nx*i + 1, nx*i + 1) -= rho * (r(j) * (distance - dy*dy/distance)/(dx*dx + dy*dy) - 1);      // ∂²c/∂yᵢ∂yᵢ
+                        // lxx(nx*i, nx*i+1) -= rho * (r(j) * (-dx*dy/distance)/(dx*dx + dy*dy));                          // ∂²c/∂xᵢ∂yᵢ
+                        // lxx(nx*i+1, nx*i) -= rho * (r(j) * (-dx*dy/distance)/(dx*dx + dy*dy));                          // ∂²c/∂yᵢ∂xᵢ, lxx(nx*i, nx*i+1);
+                        
+                        // lxx(nx*i, nx*j) += rho * (r(j) * (distance - dx*dx/distance)/(dx*dx + dy*dy) - 1);              // ∂²c/∂xᵢ∂xⱼ 
+                        // lxx(nx*j,nx*i) += rho * (r(j) * (distance - dx*dx/distance)/(dx*dx + dy*dy) - 1);               // ∂²c/∂xⱼ∂xᵢ, lxx(nx*i, nx*j);
+                        // lxx(nx*i, nx*j + 1) += rho * (r(j) * (-dx*dy/distance)/(dx*dx + dy*dy));                        // ∂²c/∂xᵢ∂yⱼ
+                        // lxx(nx*j + 1, nx*i) += rho * (r(j) * (-dx*dy/distance)/(dx*dx + dy*dy));                        // ∂²c/∂yⱼ∂xᵢ, lxx(nx*i, nx*j + 1) 
+
+                        // lxx(nx*i+1,nx*j) += rho * (r(j) * (-dx*dy/distance)/(dx*dx + dy*dy));                           // ∂²c/∂yᵢ∂xⱼ       
+                        // lxx(nx*j,nx*i+1) += rho * (r(j) * (-dx*dy/distance)/(dx*dx + dy*dy));                           // ∂²c/∂xⱼ∂yᵢ, lxx(nx*i+1,nx*j)
+                        
+                        // lxx(nx*j, nx*j) -= rho * (r(j) * (distance - dx*dx/distance)/(dx*dx + dy*dy) - 1);              // ∂²c/∂xⱼ∂xⱼ    
+                        // lxx(nx*j + 1, nx*j + 1) -= rho * (r(j) * (distance - dy*dy/distance)/(dx*dx + dy*dy) - 1);      // ∂²c/∂yⱼ∂yⱼ
+                        
+                        // lxx(nx*j + 1, nx*j) -= rho * (r(j) * (-dx*dy/distance)/(dx*dx + dy*dy));                        // ∂²c/∂yⱼ∂xⱼ
+                        // lxx(nx*j, nx*j+1) -= rho * (r(j) * (-dx*dy/distance)/(dx*dx + dy*dy));                          // ∂²c/∂xⱼ∂yⱼ, lxx(nx*j + 1, nx*j)
+                                                                                                                        
+                        // lxx(nx*i + 1, nx*j + 1) -= rho * (r(j) * (-distance + dy*dy/distance)/(dx*dx + dy*dy) + 1);     // ∂²c/∂yⱼ∂yᵢ
+                        // lxx(nx*j + 1, nx*i + 1) -= rho * (r(j) * (-distance + dy*dy/distance)/(dx*dx + dy*dy) + 1);     // ∂²c/∂yᵢ∂yⱼ,  lxx(nx*i + 1, nx*j + 1)
+
+                                                                                                                        // ∂²c/∂yᵢ∂xⱼ              
+                    }
+                }   
+            }
         }
 
         void TerminalCostHessian(const int i, MatrixXd &lxx, const VectorXd& x) override {
