@@ -19,17 +19,17 @@ class DiffDriveCost : public Cost {
 
 
         // TODO: Shouldn't be cost relative to goal
-        double StageCost(const VectorXd &x, const VectorXd &u) override{
+        double StageCost(const int i, const VectorXd &x, const VectorXd &u) override{
             // double input_cost;
             // for ()
             return (0.5*(x - xgoal).transpose()*Q*(x - xgoal) + 0.5*u.transpose()*R*u).sum();       // returns a 1x1 matrix?
         }
 
-        double TerminalCost(const VectorXd &x) override{
+        double TerminalCost(const int i, const VectorXd &x) override{
             return (0.5*(x - xgoal).transpose()*QN*(x - xgoal)).sum();
         }
 
-        void StageCostGradient(VectorXd &lx, VectorXd &lu, const VectorXd& x, const VectorXd& u) override{
+        void StageCostGradient(const int i, VectorXd &lx, VectorXd &lu, const VectorXd& x, const VectorXd& u) override{
             assert(lx.rows() == n_dims);
             assert(lx.cols() == 1);
             assert(lu.rows() == m_dims);
@@ -39,13 +39,13 @@ class DiffDriveCost : public Cost {
             lu = R*u;
         }
 
-        void TerminalCostGradient(VectorXd &lx, const VectorXd& x) override{
+        void TerminalCostGradient(const int i, VectorXd &lx, const VectorXd& x) override{
             assert(lx.rows() == n_dims);
 
             lx = QN*(x -xgoal);
         }
 
-        void StageCostHessian(MatrixXd &lxx, MatrixXd &luu, const VectorXd& x, const VectorXd& u) override {
+        void StageCostHessian(const int i, MatrixXd &lxx, MatrixXd &luu, const VectorXd& x, const VectorXd& u) override {
             assert(lxx.rows() == n_dims);
             assert(lxx.cols() == n_dims);
             assert(luu.rows() == m_dims);
@@ -56,7 +56,7 @@ class DiffDriveCost : public Cost {
 
         }
 
-        void TerminalCostHessian(MatrixXd &lxx, const VectorXd& x) override {
+        void TerminalCostHessian(const int i, MatrixXd &lxx, const VectorXd& x) override {
             assert(lxx.rows() == n_dims);
             lxx = QN;
         }

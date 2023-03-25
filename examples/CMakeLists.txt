@@ -8,16 +8,11 @@ find_package(matplotlibcpp17 REQUIRED)
 # Find the header file of Python.h in Python3_INCLUDE_DIRS and numpy/arrayobject.h in include
 include_directories(${Python3_INCLUDE_DIRS} include)
 
-message(Python3_INCLUDE_DIRS="${Python3_INCLUDE_DIRS}")
-
 add_executable(main main.cpp)           # target
 
 add_executable(pointmassEx pointmassEx.cpp)
 
 add_executable(pointmass_imgui pointmass_imgui.cpp)
-
-# add_executable(tbot_example tbot_example.cpp)           # target
-
 
 # Link executable to ILQR library
 target_link_libraries(main
@@ -38,4 +33,3 @@ target_link_libraries(pointmass_imgui
     glfw 
     glad
     ALILQGames)
-

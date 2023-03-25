@@ -113,8 +113,8 @@ void ALILQGames::backward_pass()
     //->TerminalCostGradient(lx, x_k[H-1]);
     for (int i=0; i < n_agents; i++)            // For each agent
     {
-        pc[i]->TerminalCostGradient(lx[i], x_k[H-1]);
-        pc[i]->TerminalCostHessian(lxx[i], x_k[H-1]);
+        pc[i]->TerminalCostGradient(i, lx[i], x_k[H-1]);
+        pc[i]->TerminalCostHessian(i, lxx[i], x_k[H-1]);
 
         P[i] = lxx[i];
         p[i] = lx[i];
@@ -137,8 +137,8 @@ void ALILQGames::backward_pass()
             // std::cout << "P[i] " << "\n" <<  P[i] << "\n";
             // std::cout << "luu[i] " << "\n" <<  luu[i] << "\n";
 
-            pc[i]->StageCostGradient(lx[i], lu[i], x_k[k], u_k[k]);
-            pc[i]->StageCostHessian(lxx[i], luu[i], x_k[k], u_k[k]); 
+            pc[i]->StageCostGradient(i, lx[i], lu[i], x_k[k], u_k[k]);
+            pc[i]->StageCostHessian(i, lxx[i], luu[i], x_k[k], u_k[k]); 
 
             //augmentedLagrangian(lx[i],)
             // S = [(R¹¹ + B¹ᵀ P¹ B¹)     (B¹ᵀ P¹ B²)     ⋅⋅⋅      (B¹ᵀ P¹ Bᴺ)   ;

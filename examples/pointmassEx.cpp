@@ -3,6 +3,7 @@
 #include "ALILQGames/NPlayerModel.h"
 #include "ALILQGames/BoxConstraint.h"
 #include "ALILQGames/CollisionConstraint2D.h"
+#include "ALILQGames/CollisionCost2D.h"
 #include "ALILQGames/costDiffDrive.h"
 #include <iostream>
 #include <vector>
@@ -25,7 +26,7 @@ int main(){
 
     // Player 1 costs
     MatrixXd Q1 = MatrixXd::Zero(8,8);
-    Q1.block(0,0,4,4) = 0.1*MatrixXd::Identity(4,4);
+    Q1.block(0,0,4,4) = 0.0*MatrixXd::Identity(4,4);
 
     MatrixXd QN1 = MatrixXd::Zero(8,8);
     QN1.block(0,0,4,4) = 30.0*MatrixXd::Identity(4,4);
@@ -67,33 +68,34 @@ int main(){
 
     VectorXd r_avoid(n_agents);
 
-    r_avoid(0) = 0.5;
-    r_avoid(1) = 0.5;
-    r_avoid(2) = 0.5;
-    // r_avoid(3) = 0.5;
+    r_avoid(0) = 1.0;
+    r_avoid(1) = 1.0;
+    r_avoid(2) = 1.0;
+    // r_avoid(3) = 1.0;
 
 
     VectorXd cinq = VectorXd::Zero(n_agents*(n_agents - 1));
 
     VectorXd xtest(n_agents*nx);
     xtest << 1.5, 2.5, 0.0, 0.0, 
-            5.0, 4.0, 0.0, 0.0,
-            1.0, 2.0, 0.0, 0.0;
-            // 1.5, 2.0, 0.0, 0.0;
-
-    GlobalConstraints* obstacleConst = new CollisionConstraint2D(nx, n_agents, r_avoid);
-
-    obstacleConst->StateConstraint(cinq, xtest); 
-
-    MatrixXd cx = MatrixXd::Zero(n_agents*(n_agents - 1), xtest.rows());
+            1.2, 2.4, 0.0, 0.0,
+            2.3, 2.1, 0.0, 0.0;
+            // 1.5, 1.9, 0.0, 0.0;
+    VectorXd lx = VectorXd::Zero(n_agents*nx);
+    VectorXd lu = VectorXd::Zero(n_agents*nu);
 
 
-    obstacleConst->StateConstraintJacob(cx, xtest);   
+    
+    double rho = 20.0;
 
-    std::cout << "\n" << cinq << "\n";
 
-    std::cout << "\n" << cx << "\n";
+    Cost* collision = new CollisionCost2D(n_agents, Q1, QN1, R1, xgoal, r_avoid, rho);
 
+    // std::cout << "Cost\n " << collision->StageCost(0, xtest, u) << "\n";
+
+    collision->StageCostGradient(0, lx, lu, xtest, u);
+
+    std::cout << "lx " << lx << "\n";
 
     // GlobalConstraints* cg = new BoxConstraint(umin, umax, xmin, xmax);
 

@@ -7,22 +7,26 @@
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
 
+/*
+    Base cost class for a SINGLE agent
+*/
+
 struct Cost
 {
     virtual ~Cost() = default;
 
-    virtual double StageCost(const VectorXd& x, const VectorXd& u) = 0;                          // cost function
+    virtual double StageCost(const int i, const VectorXd& x, const VectorXd& u) = 0;                          // cost function
 
-    virtual double TerminalCost(const VectorXd& x) = 0;                                          // cost function
+    virtual double TerminalCost(const int i, const VectorXd& x) = 0;                                          // cost function
 
     //virtual double TotalCost(const VectorXd &x, const VectorXd &u) = 0;                        // cost function
 
-    virtual void StageCostGradient(VectorXd& lx, VectorXd& lu, const VectorXd& x, const VectorXd& u) = 0;
+    virtual void StageCostGradient(const int i, VectorXd& lx, VectorXd& lu, const VectorXd& x, const VectorXd& u) = 0;
 
-    virtual void TerminalCostGradient(VectorXd& lx, const VectorXd& x) = 0;
+    virtual void TerminalCostGradient(const int i, VectorXd& lx, const VectorXd& x) = 0;
 
-    virtual void StageCostHessian(MatrixXd& lxx, MatrixXd& luu, const VectorXd& x, const VectorXd& u) = 0;
+    virtual void StageCostHessian(const int i, MatrixXd& lxx, MatrixXd& luu, const VectorXd& x, const VectorXd& u) = 0;
 
-    virtual void TerminalCostHessian(MatrixXd& lxx, const VectorXd& x) = 0;
+    virtual void TerminalCostHessian(const int i, MatrixXd& lxx, const VectorXd& x) = 0;
 
 };
