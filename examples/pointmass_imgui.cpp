@@ -3,6 +3,7 @@
 #include "ALILQGames/NPlayerModel.h"
 #include "ALILQGames/BoxConstraint.h"
 #include "ALILQGames/costDiffDrive.h"
+#include "ALILQGames/CollisionCost2D.h"
 #include <iostream>
 #include <vector>
 #include <chrono>
@@ -27,36 +28,42 @@ void change_clear_color(float r, float g, float b) {
 
 int main(){
 
+    int nx = 4;
+    int nu = 2;
+    int n_ag = 2;
+    int Nx = n_ag*nx;
+    int Nu = n_ag*nu;
+
     // Player 1 costs
 
-    MatrixXd Q1 = MatrixXd::Zero(8,8);
-    Q1.block(0,0,4,4) = 0.1*MatrixXd::Identity(4,4);
+    MatrixXd Q1 = MatrixXd::Zero(Nx, Nx);
+    Q1.block(0, 0, nx, nx) = 0.1*MatrixXd::Identity(nx, nx);
 
-    MatrixXd QN1 = MatrixXd::Zero(8,8);
-    QN1.block(0,0,4,4) = 30.0*MatrixXd::Identity(4,4);
+    MatrixXd QN1 = MatrixXd::Zero(Nx, Nx);
+    QN1.block(0, 0, nx, nx) = 10.0*MatrixXd::Identity(nx, nx);
     
-    MatrixXd R1 = MatrixXd::Zero(4,4);
-    R1.block(0,0,2,2) = 2.0*MatrixXd::Identity(2,2);
+    MatrixXd R1 = MatrixXd::Zero(Nu, Nu);
+    R1.block(0, 0, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
 
     // Player 2 costs
 
-    MatrixXd Q2 = MatrixXd::Zero(8,8);
-    Q2.block(4,4,4,4) = 0.1*MatrixXd::Identity(4,4);
+    MatrixXd Q2 = MatrixXd::Zero(Nx, Nx);
+    Q2.block(1*nx, 1*nx, nx, nx) = 0.1*MatrixXd::Identity(nx, nx);
 
-    MatrixXd QN2 = MatrixXd::Zero(8,8);
-    QN2.block(4,4,4,4) = 30.0*MatrixXd::Identity(4,4);
+    MatrixXd QN2 = MatrixXd::Zero(Nx, Nx);
+    QN2.block(1*nx, 1*nx, nx, nx) = 10.0*MatrixXd::Identity(nx, nx);
     
-    MatrixXd R2 = MatrixXd::Zero(4,4);
-    R2.block(2,2,2,2) = 2.0*MatrixXd::Identity(2,2);
+    MatrixXd R2 = MatrixXd::Zero(Nu, Nu);
+    R2.block(1*nu, 1*nu, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
 
     // Initialize a 2 player point mass
-    VectorXd x0(8);
+    VectorXd x0(Nx);
 
-    VectorXd xgoal(8);
-    VectorXd u(4);
+    VectorXd xgoal(Nx);
+    VectorXd u(Nu);
 
-    x0 << 0.0, 1.5, 0.0, 0.0, 1.5, 0.0, 0.0, 0.0;
-    xgoal << 5.0, 1.5, 0.0, 0.0, 1.5, 5.0, 0.0, 0.0;
+    x0 << 5.0, 0.0, 0.0, 0.0, 0.0, 5.0, 0.0, 0.0;
+    xgoal << 5.0, 10.0, 0.0, 0.0, 10.0, 5.0, 0.0, 0.0;
 
     u << 0.0, 0.0, 0.0, 0.0;
 
@@ -64,10 +71,19 @@ int main(){
 
     Model* pm = new PointMass(dt);                    // heap allocation
 
-    NPlayerModel* Npm = new NPlayerModel(pm, 2);
-    vector<std::shared_ptr<Cost>> pc;  
-    pc.push_back( shared_ptr<Cost> (new DiffDriveCost(Q1, QN1, R1, xgoal)) );   
-    pc.push_back( shared_ptr<Cost> (new DiffDriveCost(Q2, QN2, R2, xgoal)) );
+    NPlayerModel* Npm = new NPlayerModel(pm, n_ag);
+    vector<std::shared_ptr<Cost>> pc;
+
+    double rho = 500.0;
+    VectorXd r_avoid(n_ag);
+
+    r_avoid(0) = 2.0;
+    r_avoid(1) = 2.0;
+
+    // pc.push_back( shared_ptr<Cost> (new DiffDriveCost(Q1, QN1, R1, xgoal)) );   
+    // pc.push_back( shared_ptr<Cost> (new DiffDriveCost(Q2, QN2, R2, xgoal)) );
+    pc.push_back( shared_ptr<Cost> (new CollisionCost2D(n_ag, Q1, QN1, R1, xgoal, r_avoid, rho)) );   
+    pc.push_back( shared_ptr<Cost> (new CollisionCost2D(n_ag, Q2, QN2, R2, xgoal, r_avoid, rho)) );
 
 
     ALILQGames* alilqgame = new ALILQGames(Npm, pc);                 // Declare pointer to the ILQR class.

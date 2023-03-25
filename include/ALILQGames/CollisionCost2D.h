@@ -26,13 +26,29 @@ class CollisionCost2D : public Cost {
             dy.resize(n_ag);
         }
 
+        double TotalCost(const int i, const int H, const std::vector<VectorXd>& x, const std::vector<VectorXd>& u) override{
+            double cost;
+            const int nx = x[0].rows()/n_ag;
+            const int nu = u[0].rows()/n_ag;
+
+            // Add up stage cost
+            for (int k=0; k < H-2; k++)
+            {
+                cost += StageCost(i, x[k], u[k]);
+            }
+
+            // if (length(x) )
+            cost += TerminalCost(i, x[H]);
+            return cost;
+        }
+
 
         // TODO: Shouldn't be cost relative to goal
         double StageCost(const int i, const VectorXd &x, const VectorXd &u) override{
             // double input_cost;
             const int nx = x.rows()/n_ag;
             double distance;
-            double penalty_coll;
+            double penalty_coll = 0.0;
             double dx, dy;
             for (int j=0; j < n_ag; j++)
             {
@@ -65,10 +81,10 @@ class CollisionCost2D : public Cost {
 
             const int nx = x.rows()/n_ag;
             double distance;
-            double penalty_coll;
             double dx, dy;
 
-            // lx = Q*(x - xgoal);
+            lx = Q*(x - xgoal);
+            lu = R*u;
 
             for (int j=0; j < n_ag; j++)
             {
@@ -80,6 +96,12 @@ class CollisionCost2D : public Cost {
                     distance = std::sqrt(dx*dx + dy*dy);
                     if (distance <= r(j))
                     {
+                        if (distance < 0.001)
+                        {
+                            dx += 0.01;
+                            dy += 0.01;
+                            distance = std::sqrt(dx*dx + dy*dy);
+                        }   
                         lx(nx*i) -= rho * dx * (r(j) - distance)/distance;
                         lx(nx*i + 1) -= rho * dy * (r(j) - distance)/distance;
                         lx(nx*j) += rho * dx * (r(j) - distance)/distance; 
@@ -87,8 +109,6 @@ class CollisionCost2D : public Cost {
                     }
                 }
             }
-
-            // lu = R*u;
         }
 
         void TerminalCostGradient(const int i, VectorXd &lx, const VectorXd& x) override{
@@ -106,11 +126,10 @@ class CollisionCost2D : public Cost {
        
             const int nx = x.rows()/n_ag;
             double distance;
-            double penalty_coll;
             double dx, dy;
 
-            // lxx = Q;
-            // luu = R;  
+            lxx = Q;
+            luu = R;  
 
             for (int j=0; j < n_ag; j++)
             {
@@ -122,6 +141,13 @@ class CollisionCost2D : public Cost {
                     distance = std::sqrt(dx*dx + dy*dy);
                     if (distance <= r(j))
                     {
+
+                        if (distance < 0.001)
+                        {
+                            dx += 0.01;
+                            dy += 0.01;
+                            distance = std::sqrt(dx*dx + dy*dy);
+                        }
                         int xi = nx*i;
                         int yi = nx*i +1;
                         int xj = nx*j;

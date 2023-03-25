@@ -50,7 +50,7 @@ public:
         ImGui::Begin("2D Visualizer Window");
 
 
-		const float agent_radius = 30.0;
+		const float agent_radius = 20.0;
         constexpr float kMinGreen = 0.15;
         constexpr float kMaxGreen = 1.0 - kMinGreen;
         const float color_scaling = (2.0 - 2.0 * kMinGreen);
@@ -119,18 +119,38 @@ public:
 		ImGui::Begin("Trajectory data");
 
 		float accel[k_step];
+		float posX[k_step];
 		float cost[k_step];
 
 
 		for (int i = 0; i < n_agents; i++){
 			for (int k=0; k<k_step; k++)
 			{
-				accel[k] = solver->getControl(k)[i*nu];
-				// cost[l] = solver->pc[0]->StageCost()
+				const float xi = solver->getState(k)[i*nx];
+				const float ui = solver->getControl(k)[i*nu];
+				posX[k] = xi;
+				accel[k] = ui;
+				if (k < H)
+				{
+					cost[k] = solver->pc[i]->StageCost(i, solver->getState(k), solver->getControl(k));
+				} 
+				else{
+					cost[k] = solver->pc[i]->TerminalCost(i, solver->getState(k));
+				}
 			}
-			const std::string label = "Player " + std::to_string(i + 1) + " U1";
+			const std::string labelX = "Player " + std::to_string(i + 1) + " posX";
 
-			ImGui::PlotLines(label.c_str(), accel, k_step, 0, label.c_str(),
+			const std::string labelU = "Player " + std::to_string(i + 1) + " U";
+			const std::string labelCost = "Player " + std::to_string(i + 1) + " Cost";
+
+			ImGui::PlotLines(labelX.c_str(), posX, k_step, 0, labelX.c_str(),
+					FLT_MAX, FLT_MAX,
+					ImVec2(500.0f,100.0f));
+			// ImGui::PlotLines(labelU.c_str(), accel, k_step, 0, labelU.c_str(),
+			// 		FLT_MAX, FLT_MAX,
+			// 		ImVec2(500.0f,100.0f));
+			
+			ImGui::PlotLines(labelCost.c_str(), cost, k_step, 0, labelCost.c_str(),
 					FLT_MAX, FLT_MAX,
 					ImVec2(500.0f,100.0f));
         	
@@ -151,7 +171,7 @@ private:
 		glClearColor(r, g, b, 1.00f);
 	}
 
-	const float PtoW = 100.0;
+	const float PtoW = 40.0;
 
 	ImVec2 PositionToWindowCoordinates(float x, float y) {
 		ImVec2 coords = WindowCenter();

@@ -92,15 +92,38 @@ int main(){
     double rho = 20.0;
 
 
-    Cost* collision = new CollisionCost2D(n_agents, Q1, QN1, R1, xgoal, r_avoid, rho);
+    // Cost* collision = new CollisionCost2D(n_agents, Q1, QN1, R1, xgoal, r_avoid, rho);
 
-    // std::cout << "Cost\n " << collision->StageCost(0, xtest, u) << "\n";
+    // // std::cout << "Cost\n " << collision->StageCost(0, xtest, u) << "\n";
 
-    collision->StageCostGradient(0, lx, lu, xtest, u);
+    // collision->StageCostGradient(0, lx, lu, xtest, u);
 
-    collision->StageCostHessian(1, lxx, luu, xtest, u);
+    // collision->StageCostHessian(1, lxx, luu, xtest, u);
 
-    std::cout << "lxx \n" << lxx << "\n";
+    // std::cout << "lxx \n" << lxx << "\n";
+    Eigen::MatrixXd S(2, 2);
+    S << -10, 0 , 0, -2; // non semi-positive definitie matrix
+
+    bool NotPD = false;
+    Eigen::LLT<MatrixXd> lltOfS(S); // compute the Cholesky decomposition of S
+    if (lltOfS.info() == Eigen::NumericalIssue)
+    {
+        NotPD = true;
+    }
+    while(NotPD)
+    {
+        NotPD = false;
+        S += MatrixXd::Identity(2, 2);
+        Eigen::LLT<MatrixXd> lltOfS(S); // compute the Cholesky decomposition of S
+        if (lltOfS.info() == Eigen::NumericalIssue)
+        {
+            NotPD = true;
+        }
+        std::cout << "S\n " << S << "\n";
+    }
+
+    std::cout << "Send\n " << S << "\n";
+
 
     // GlobalConstraints* cg = new BoxConstraint(umin, umax, xmin, xmax);
 

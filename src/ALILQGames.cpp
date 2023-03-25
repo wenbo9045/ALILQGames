@@ -140,6 +140,34 @@ void ALILQGames::backward_pass()
             pc[i]->StageCostGradient(i, lx[i], lu[i], x_k[k], u_k[k]);
             pc[i]->StageCostHessian(i, lxx[i], luu[i], x_k[k], u_k[k]); 
 
+            bool NotPD = false;            
+            Eigen::LLT<MatrixXd> lltOflxx(lxx[i].block(i*nx, i*nx, nx, nx)); // compute the Cholesky decomposition of lxx
+
+            // Cheap hack to regularize the lxx matrix (this happens because of the collision constraint, which is non-convex)
+            // Therefore, the hessian has negative eigen-values
+            // Without regularization, the agents want to "collide"
+            
+            if (lltOflxx.info() == Eigen::NumericalIssue)
+            {
+                NotPD = true;
+                std::cout << "lxx is not PD\n " << lxx[i] << "\n";
+            }
+
+            while(NotPD)
+            {
+                NotPD = false;
+                double max_lxx = lxx[i].block(i*nx, i*nx, nx, nx).maxCoeff();
+                // double max_lxx = lxx[i].block(i*nx, i*nx, nx, nx).lpNorm<Eigen::Infinity>();
+                lxx[i].block(i*nx, i*nx, nx, nx) += max_lxx*MatrixXd::Identity(nx, nx);
+
+                Eigen::LLT<MatrixXd> lltOflxx(lxx[i].block(i*nx, i*nx, nx, nx));
+
+                if (lltOflxx.info() == Eigen::NumericalIssue)
+                {
+                    NotPD = true;
+                }
+            }
+
             //augmentedLagrangian(lx[i],)
             // S = [(R¹¹ + B¹ᵀ P¹ B¹)     (B¹ᵀ P¹ B²)     ⋅⋅⋅      (B¹ᵀ P¹ Bᴺ)   ;
             //         (B²ᵀ P² B¹)     (R²² + B²ᵀ P² B²)  ⋅⋅⋅      (B²ᵀ P² Bᴺ)   ;
@@ -169,6 +197,9 @@ void ALILQGames::backward_pass()
             Yd.segment(i*nu, nu) = (fu.middleCols(i*nu, nu).transpose() * p[i]) + lu[i].segment(i*nu, nu);
 
         }
+        // std::cout << "S \n" << S << "\n";
+
+
         // Do a least squares like \ in matlab??
         S = S.inverse();
         K_k[k] = S*YK; 
@@ -204,7 +235,7 @@ void ALILQGames::solve(const VectorXd& x0)
 
         backward_pass();
 
-        std::cout << iter_cost << "\n";
+        // std::cout << iter_cost << "\n";
 
         forward_rollout(x0);
 

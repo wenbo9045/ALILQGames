@@ -17,6 +17,18 @@ class DiffDriveCost : public Cost {
             m_dims = R.rows();
         }
 
+        double TotalCost(const int i, const int H, const std::vector<VectorXd>& x, const std::vector<VectorXd>& u) override{
+            double cost;
+            // const int nx = x[0].rows()/n_ag;
+            // const int nu = u[0].rows()/n_ag;
+
+            // for (int k=0; k < H; k++)
+            // {
+            //     cost += StageCost(i, x[k].segment(i*nx, nx), u[k].segment(i*nu, nu));
+            // }
+            return cost;
+        }
+
 
         // TODO: Shouldn't be cost relative to goal
         double StageCost(const int i, const VectorXd &x, const VectorXd &u) override{

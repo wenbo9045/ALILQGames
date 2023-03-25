@@ -19,7 +19,7 @@ struct Cost
 
     virtual double TerminalCost(const int i, const VectorXd& x) = 0;                                          // cost function
 
-    //virtual double TotalCost(const VectorXd &x, const VectorXd &u) = 0;                        // cost function
+    virtual double TotalCost(const int i, const int H, const std::vector<VectorXd>& x, const std::vector<VectorXd>& u) = 0;                        // cost function
 
     virtual void StageCostGradient(const int i, VectorXd& lx, VectorXd& lu, const VectorXd& x, const VectorXd& u) = 0;
 
