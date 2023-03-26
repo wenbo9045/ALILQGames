@@ -3,17 +3,6 @@
 
         // ~PointMass() {}
         // For heterogenous agents, pass std::vector<Model>& playerModels
-        // NPlayerSystem(const Model& DynModel, int players)
-        // {
-        //     model = DynModel;
-        //     MPlayers = players;
-        //     nx = model.nx;
-        //     nu = model.nu;
-        //     Nx = model.nx * MPlayers;
-        //     Nu =  model.nu * MPlayers;
-        //     dt = model.dt;
-        // }
-    
         VectorXd NPlayerModel::dynamics_concat(const VectorXd &x, const VectorXd &u)
         {
             VectorXd xdot(Nx);              // init this

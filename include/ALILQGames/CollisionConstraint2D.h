@@ -1,6 +1,6 @@
 #pragma once
 #include "GlobalConstraints.h"
-
+#include "SolverParams.h"
 /*
     2D collision constraint between n_agent robots class
     that inherits from the GlobalConstraints class
@@ -32,9 +32,12 @@
 class CollisionConstraint2D : public GlobalConstraints {
 
     public:
-        CollisionConstraint2D(int n_dims, int n_agents, VectorXd& r_avoid) : nx(n_dims), n_ag(n_agents), r(r_avoid) {}
+        CollisionConstraint2D(SolverParams& params, VectorXd& r_avoid) : nx(params.nx), n_ag(params.n_agents), r(r_avoid) 
+        {
+            n_constr = n_ag*(n_ag-1);
+        }
 
-        void StateConstraint(VectorXd& c,const VectorXd& x) override {
+        void StateAndInputConstraint(Eigen::Ref<VectorXd> c,const VectorXd& x, const VectorXd& u) override {
             const int n = c.rows();
             assert(n == n_ag*(n_ag-1));                // Make sure that the number of constraints passed is n_agents*(n_agents - 1)
             assert(nx == x.rows()/n_ag);        // Make sure that the dimension of x is correct based on a single agent's 
@@ -66,7 +69,7 @@ class CollisionConstraint2D : public GlobalConstraints {
         }
 
         // Probably there is an easier way to do it, because the Jacobian has a nice pattern
-        void StateConstraintJacob(MatrixXd& cx, const VectorXd& x) override {
+        void StateConstraintJacob(Eigen::Ref<MatrixXd> cx, const VectorXd& x) override {
             const int n = cx.rows();
             const int m = cx.cols();
 
@@ -96,6 +99,11 @@ class CollisionConstraint2D : public GlobalConstraints {
                 vnot += 1;
             }
         }
+
+        void ControlConstraintJacob(Eigen::Ref<MatrixXd> cu, const VectorXd& u) override 
+        {
+            cu = MatrixXd::Zero(n_constr, u.rows());
+        } 
 
     private:
 

@@ -1,12 +1,12 @@
 project(${CMAKE_PROJECT_NAME})               # Name of project
 
 # Find the python3 package with component NumPy
-find_package(Python3 COMPONENTS Interpreter Development NumPy)
-find_package(pybind11 REQUIRED)
-find_package(matplotlibcpp17 REQUIRED)
+# find_package(Python3 COMPONENTS Interpreter Development NumPy)
+# find_package(pybind11 REQUIRED)
+# find_package(matplotlibcpp17 REQUIRED)
 
 # Find the header file of Python.h in Python3_INCLUDE_DIRS and numpy/arrayobject.h in include
-include_directories(${Python3_INCLUDE_DIRS} include)
+# include_directories(${Python3_INCLUDE_DIRS} include)
 
 add_executable(main main.cpp)           # target
 
@@ -17,14 +17,14 @@ add_executable(pointmass_imgui pointmass_imgui.cpp)
 # Link executable to ILQR library
 target_link_libraries(main
     PRIVATE                             # private dependency of the main executable (exectubales are usually private)
-    ${Python3_LIBRARIES}
+    # ${Python3_LIBRARIES}
     ALILQGames)
 
 target_link_libraries(pointmassEx
     PRIVATE                             # private dependency of the main executable (exectubales are usually private)
-    ${Python3_LIBRARIES}
-    pybind11::embed
-    matplotlibcpp17::matplotlibcpp17
+    # ${Python3_LIBRARIES}
+    # pybind11::embed
+    # matplotlibcpp17::matplotlibcpp17
     ALILQGames)
 
 target_link_libraries(pointmass_imgui

@@ -5,6 +5,8 @@
 #include "ALILQGames/CollisionConstraint2D.h"
 #include "ALILQGames/CollisionCost2D.h"
 #include "ALILQGames/costDiffDrive.h"
+#include "ALILQGames/AL.h"
+#include "ALILQGames/SolverParams.h"
 #include <iostream>
 #include <vector>
 #include <chrono>
@@ -59,19 +61,29 @@ int main(){
 
     int nx = 4;
     int nu = 2;
-    int n_agents = 4;
-    VectorXd umin = -5.0*VectorXd::Ones(8);
-    VectorXd umax =  5.0*VectorXd::Ones(8);
+    int n_agents = 3;
 
-    VectorXd xmin = -100.0*VectorXd::Ones(8);
-    VectorXd xmax =  100.0*VectorXd::Ones(8);
+    SolverParams params;
+    params.nx = nx;
+    params.nu = nu;
+    params.n_agents = n_agents;
+    params.Nx = nx*n_agents;
+    params.Nu = nu*n_agents;
+
+    params.p_inq = 2*(params.Nx + params.Nu) + n_agents*(n_agents - 1);   // state and input constraints + number of collisions constraints btn agents
+
+    VectorXd umin = -5.0*VectorXd::Ones(nu*n_agents);
+    VectorXd umax =  5.0*VectorXd::Ones(nu*n_agents);
+
+    VectorXd xmin = -100.0*VectorXd::Ones(nx*n_agents);
+    VectorXd xmax =  100.0*VectorXd::Ones(nx*n_agents);
 
     VectorXd r_avoid(n_agents);
 
     r_avoid(0) = 1.0;
     r_avoid(1) = 1.0;
     r_avoid(2) = 1.0;
-    r_avoid(3) = 1.0;
+    // r_avoid(3) = 1.0;
 
 
     VectorXd cinq = VectorXd::Zero(n_agents*(n_agents - 1));
@@ -79,53 +91,49 @@ int main(){
     VectorXd xtest(n_agents*nx);
     xtest << 1.5, 2.5, 0.0, 0.0, 
             1.2, 2.4, 0.0, 0.0,
-            2.3, 2.1, 0.0, 0.0,
-            1.5, 1.9, 0.0, 0.0;
+            2.3, 2.1, 0.0, 0.0;
+            // 1.5, 1.9, 0.0, 0.0;
+    
+    VectorXd utest(n_agents*nu);
+    utest << 1.5, 2.5, 
+            1.2, 2.4,
+            2.3, 2.1;
+            // 0.0, 0.0;
+
     VectorXd lx = VectorXd::Zero(n_agents*nx);
     MatrixXd lxx = MatrixXd::Zero(n_agents*nx, n_agents*nx);
 
     VectorXd lu = VectorXd::Zero(n_agents*nu);
     MatrixXd luu = MatrixXd::Zero(n_agents*nu, n_agents*nu);
 
-
     
     double rho = 20.0;
 
+    // std::vector<std::shared_ptr<Cost>> pc;  
+    // pc.push_back( std::shared_ptr<Cost> (new BoxConstraint(umin, umax, xmin, xmax);) );   
+    // pc.push_back( std::shared_ptr<Cost> (new DiffDriveCost(Q2, QN2, R2, xgoal)) );
 
-    // Cost* collision = new CollisionCost2D(n_agents, Q1, QN1, R1, xgoal, r_avoid, rho);
 
-    // // std::cout << "Cost\n " << collision->StageCost(0, xtest, u) << "\n";
+
+    std::vector<std::shared_ptr<GlobalConstraints>> ptr_constr; 
+    ptr_constr.push_back( std::shared_ptr<GlobalConstraints> (new CollisionConstraint2D(params, r_avoid)) );
+    ptr_constr.push_back( std::shared_ptr<GlobalConstraints> (new BoxConstraint(umin, umax, xmin, xmax)) );   
+
+
+    AL* al = new AL(params, ptr_constr);
+
+    al->ConcatConstraint(xtest, utest);
+    // std::cout << "p " << params.p_inq << "\n";
+
+
 
     // collision->StageCostGradient(0, lx, lu, xtest, u);
 
     // collision->StageCostHessian(1, lxx, luu, xtest, u);
 
     // std::cout << "lxx \n" << lxx << "\n";
-    Eigen::MatrixXd S(2, 2);
-    S << -10, 0 , 0, -2; // non semi-positive definitie matrix
-
-    bool NotPD = false;
-    Eigen::LLT<MatrixXd> lltOfS(S); // compute the Cholesky decomposition of S
-    if (lltOfS.info() == Eigen::NumericalIssue)
-    {
-        NotPD = true;
-    }
-    while(NotPD)
-    {
-        NotPD = false;
-        S += MatrixXd::Identity(2, 2);
-        Eigen::LLT<MatrixXd> lltOfS(S); // compute the Cholesky decomposition of S
-        if (lltOfS.info() == Eigen::NumericalIssue)
-        {
-            NotPD = true;
-        }
-        std::cout << "S\n " << S << "\n";
-    }
-
-    std::cout << "Send\n " << S << "\n";
 
 
-    // GlobalConstraints* cg = new BoxConstraint(umin, umax, xmin, xmax);
 
     // auto t0 = high_resolution_clock::now();
     // cg -> StateAndInputConstraint(cinq ,xtest ,utest);

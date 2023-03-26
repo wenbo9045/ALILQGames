@@ -13,11 +13,13 @@ class BoxConstraint : public GlobalConstraints {
             nx = xmax_in.rows();
             nu = umax_in.rows();
 
-            Cx = MatrixXd::Zero(2*(nx + nu), nx);
+            n_constr = 2*(nx + nu);
+
+            Cx = MatrixXd::Zero(n_constr, nx);
             Cx.block(0,0,nx,nx) = MatrixXd::Identity(nx, nx);
             Cx.block(nx+nu,0,nx,nx) = -MatrixXd::Identity(nx, nx);
 
-            Cu = MatrixXd::Zero(2*(nx + nu), nu);
+            Cu = MatrixXd::Zero(n_constr, nu);
             Cu.block(nx,0,nu,nu) = MatrixXd::Identity(nu, nu);
             Cu.block(2*nx + nu,0, nu , nu) = -MatrixXd::Identity(nu, nu);
 
@@ -37,7 +39,7 @@ class BoxConstraint : public GlobalConstraints {
 
         }
 
-        void StateAndInputConstraint(VectorXd& c,const VectorXd& x, const VectorXd& u) override {
+        void StateAndInputConstraint(Eigen::Ref<VectorXd> c,const VectorXd& x, const VectorXd& u) override {
             assert(nx == x.rows());
             assert(nu == u.rows());
             // Z << x, 
@@ -72,9 +74,9 @@ class BoxConstraint : public GlobalConstraints {
             // std::cout << "\nc2\n" << c << "\n";
         }
         
-        void StateConstraintJacob(MatrixXd& cx, const VectorXd& x) override {cx = Cx;}
+        void StateConstraintJacob(Eigen::Ref<MatrixXd> cx, const VectorXd& x) override {cx = Cx;}
 
-        void ControlConstraintJacob(MatrixXd& cu,const VectorXd& u) override {cu = Cu;} 
+        void ControlConstraintJacob(Eigen::Ref<MatrixXd> cu,const VectorXd& u) override {cu = Cu;} 
 
     private:
         VectorXd umin, umax, xmin, xmax;

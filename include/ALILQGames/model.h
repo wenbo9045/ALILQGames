@@ -2,7 +2,8 @@
 //#include <eigen3/Eigen/Dense>
 #include <Eigen/Dense>
 #include <iostream>
-#include <cassert>  
+#include <cassert>
+#include <memory>
 
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
