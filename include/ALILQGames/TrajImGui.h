@@ -51,13 +51,6 @@ public:
 
 
 		const float agent_radius = 20.0;
-        constexpr float kMinGreen = 0.15;
-        constexpr float kMaxGreen = 1.0 - kMinGreen;
-        const float color_scaling = (2.0 - 2.0 * kMinGreen);
-        
-        const ImU32 agent_color =
-        ImColor(ImVec4(0.15, kMinGreen + color_scaling,
-		kMinGreen + kMaxGreen - color_scaling, 1.0));
 
         ImDrawList *draw_list = ImGui::GetWindowDrawList();
 
@@ -89,12 +82,21 @@ public:
                              trajectory_color, kPolylineIsClosed,
                              trajectory_thickness);
 
+			// Note this is only for point mass
 			float x = solver->getState(k_step)[i*nx];
 			float y = solver->getState(k_step)[i*nx + 1];
+			float xdot = solver->getState(k_step)[i*nx + 2];
+			float ydot = solver->getState(k_step)[i*nx + 3];
+
+			float theta = atan2(xdot, ydot);//solver->getState(k_step)[i*nx + 2];
 
 			const ImVec2 robotPosition = PositionToWindowCoordinates(x,y);
         	
-			draw_list->AddCircle(robotPosition, agent_radius, agent_color);
+			draw_list->AddCircle(robotPosition, agent_radius, IM_COL32(255, 255, 0, 255));
+			draw_list->AddLine(robotPosition, 
+			ImVec2(robotPosition.x + 2.0*agent_radius * (cos(theta - M_PI/2.0)), 
+			robotPosition.y + 2.0*agent_radius * (sin(theta - M_PI/2.0))), 
+			IM_COL32(255, 0, 0, 255));
 		}
 
 
