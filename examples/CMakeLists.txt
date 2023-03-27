@@ -14,6 +14,9 @@ add_executable(pointmassEx pointmassEx.cpp)
 
 add_executable(pointmass_imgui pointmass_imgui.cpp)
 
+add_executable(DiffDrive_imgui DiffDrive_imgui.cpp)
+
+
 # Link executable to ILQR library
 target_link_libraries(main
     PRIVATE                             # private dependency of the main executable (exectubales are usually private)
@@ -28,6 +31,13 @@ target_link_libraries(pointmassEx
     ALILQGames)
 
 target_link_libraries(pointmass_imgui
+    PRIVATE                             # private dependency of the main executable (exectubales are usually private)
+    imgui 
+    glfw 
+    glad
+    ALILQGames)
+
+target_link_libraries(DiffDrive_imgui
     PRIVATE                             # private dependency of the main executable (exectubales are usually private)
     imgui 
     glfw 

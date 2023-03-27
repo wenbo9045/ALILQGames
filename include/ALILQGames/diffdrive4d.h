@@ -27,7 +27,7 @@ class DiffDriveModel4D : public Model {
             return xdot;
         }
 
-        void stateJacob(MatrixXd &fx, const VectorXd& x, const VectorXd& u) override {
+        void stateJacob(Eigen::Ref<MatrixXd> fx, const VectorXd& x, const VectorXd& u) override {
             assert(fx.rows() == nx);
             assert(fx.cols() == nx);
 
@@ -41,7 +41,7 @@ class DiffDriveModel4D : public Model {
             fx = fx*dt + MatrixXd::Identity(nx, nx);
         }
 
-        void controlJacob(MatrixXd &fu, const VectorXd& x, const VectorXd& u) override {
+        void controlJacob(Eigen::Ref<MatrixXd> fu, const VectorXd& x, const VectorXd& u) override {
             assert(fu.rows() == nx);
             assert(fu.cols() == nu);
 
