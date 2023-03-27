@@ -2,8 +2,10 @@
 #include "ALILQGames/pointmass.h"
 #include "ALILQGames/NPlayerModel.h"
 #include "ALILQGames/BoxConstraint.h"
+#include "ALILQGames/CollisionConstraint2D.h"
 #include "ALILQGames/costDiffDrive.h"
 #include "ALILQGames/CollisionCost2D.h"
+#include "ALILQGames/AL.h"
 #include <iostream>
 #include <vector>
 #include <chrono>
@@ -28,25 +30,43 @@ void change_clear_color(float r, float g, float b) {
 
 int main(){
 
-    int nx = 4;
-    int nu = 2;
-    int n_ag = 2;
-    int Nx = n_ag*nx;
-    int Nu = n_ag*nu;
+    // ################################# Declaring paramters for solver ######################################
+    int nx = 4;                     
+    int nu = 2;                     
+    int n_ag = 2;                   
+    int Nx = n_ag*nx;              
+    int Nu = n_ag*nu;               
 
-    double dt = 0.1;
-    int H = 100;
+    double dt = 0.1;               
 
-    SolverParams params;
-    params.H = H;
-    params.dt = dt;
-    params.nx = nx;
-    params.nu = nu;
-    params.n_agents = n_ag;
-    params.Nx = Nx;
-    params.Nu = Nu;
+    SolverParams params;                                // load param stuct (holds "most" solver paramters)
+    params.H = 100;                                     // horizon length
+    params.dt = 0.1;                                    // discretization time
+    params.nx = nx;                                     // single agent number of states
+    params.nu = nu;                                     // single agent number of controls
+    params.n_agents = n_ag;                             // total number of homogenous agents
+    params.Nx = Nx;                                     // total number of concatenated states
+    params.Nu = Nu;                                     // total number of concatenated controls
+    params.rho_obs = 500.0;                             // penalty parameter for collision cost 
 
-    // Player 1 costs
+    // number of inequality constraints = state and input constraints + number of collisions constraints btn agents
+    params.p_inq = 2*(Nx + Nu) + n_ag*(n_ag - 1);   
+
+    // lower & upper saturation limits
+    VectorXd umin = -5.0*VectorXd::Ones(nu*n_ag);
+    VectorXd umax =  5.0*VectorXd::Ones(nu*n_ag);
+
+    // lower & upper state limits
+    VectorXd xmin = -100.0*VectorXd::Ones(nx*n_ag);
+    VectorXd xmax =  100.0*VectorXd::Ones(nx*n_ag);
+
+    // collision avoidance radius for each agent: [r1: 2.0, r2: 2.0], where 1 and 2 are the agents
+    VectorXd r_avoid(n_ag);
+
+    r_avoid(0) = 2.0;                                                   
+    r_avoid(1) = 2.0;
+
+    // Player 1 Quadratic costs
 
     MatrixXd Q1 = MatrixXd::Zero(Nx, Nx);
     Q1.block(0, 0, nx, nx) = 0.1*MatrixXd::Identity(nx, nx);
@@ -57,7 +77,7 @@ int main(){
     MatrixXd R1 = MatrixXd::Zero(Nu, Nu);
     R1.block(0, 0, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
 
-    // Player 2 costs
+    // Player 2 Quadratic costs
 
     MatrixXd Q2 = MatrixXd::Zero(Nx, Nx);
     Q2.block(1*nx, 1*nx, nx, nx) = 0.1*MatrixXd::Identity(nx, nx);
@@ -69,41 +89,49 @@ int main(){
     R2.block(1*nu, 1*nu, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
 
     // Initialize a 2 player point mass
+
+    // Players' initial state
     VectorXd x0(Nx);
-
-    VectorXd xgoal(Nx);
-    VectorXd u(Nu);
-
     x0 << 5.0, 0.0, 0.0, 0.0, 0.0, 5.0, 0.0, 0.0;
+
+    // Players' goal state
+    VectorXd xgoal(Nx);
     xgoal << 5.0, 10.0, 0.0, 0.0, 10.0, 5.0, 0.0, 0.0;
 
+    // not used
+    VectorXd u(Nu);
     u << 0.0, 0.0, 0.0, 0.0;
 
-
-
+    // construct a point mass model 
     Model* pm = new PointMass(dt);                                      // heap allocation
 
+    // construct a concatenated point mass model
     NPlayerModel* Npm = new NPlayerModel(pm, n_ag);
+
+    // vector to store pointers to players' costs
     vector<std::shared_ptr<Cost>> pc;
-
-    double rho = 500.0;
-    VectorXd r_avoid(n_ag);
-
-    r_avoid(0) = 2.0;                                                   
-    r_avoid(1) = 2.0;
 
     // pc.push_back( shared_ptr<Cost> (new DiffDriveCost(Q1, QN1, R1, xgoal)) );   
     // pc.push_back( shared_ptr<Cost> (new DiffDriveCost(Q2, QN2, R2, xgoal)) );
     pc.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q1, QN1, R1, xgoal, r_avoid)) );   
     pc.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q2, QN2, R2, xgoal, r_avoid)) );
 
+    // vector to store pointers to players' constraints
+    std::vector<std::shared_ptr<GlobalConstraints>> ptr_constr; 
+    ptr_constr.push_back( std::shared_ptr<GlobalConstraints> (new CollisionConstraint2D(params, r_avoid)) );
+    ptr_constr.push_back( std::shared_ptr<GlobalConstraints> (new BoxConstraint(umin, umax, xmin, xmax)) );   
 
+    // construct an augmented lagrangian cost
+    AL* al = new AL(params, ptr_constr);
+
+    // construct the main solver
     ALILQGames* alilqgame = new ALILQGames(params, Npm, pc);                    // Declare pointer to the ILQR class.
 
-    // alilqgame->init(H);
-
+    // solve the problem
     alilqgame -> solve(x0);
 
+
+// ################################# Plotting in imgui ##################################################
     // Setup window
 	if (!glfwInit())
 		return 1;
