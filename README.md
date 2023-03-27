@@ -20,4 +20,7 @@
 ```cd examples && ./pointmass_imgui```
 
 TODO:
-- Pass SolverParams into all classes
+- Pass SolverParams to all classes
+- Test the augmented lagrangian solver, by passing it as an optional method
+- Check why the expected change in cost is acting weird
+- Add plots to variables (i.e. velocity, controls)
