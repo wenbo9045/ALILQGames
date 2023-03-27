@@ -18,14 +18,16 @@ class DiffDriveCost : public Cost {
         }
 
         double TotalCost(const int i, const int H, const std::vector<VectorXd>& x, const std::vector<VectorXd>& u) override{
-            double cost;
-            // const int nx = x[0].rows()/n_ag;
-            // const int nu = u[0].rows()/n_ag;
+            double cost = 0.0;
+            const int nx = x[0].rows()/2;
+            const int nu = u[0].rows()/2;
 
-            // for (int k=0; k < H; k++)
-            // {
-            //     cost += StageCost(i, x[k].segment(i*nx, nx), u[k].segment(i*nu, nu));
-            // }
+            std::cout << nx << "\n";
+
+            for (int k=0; k < H-1; k++)
+            {
+                cost += StageCost(i, x[k], u[k]);
+            }
             return cost;
         }
 

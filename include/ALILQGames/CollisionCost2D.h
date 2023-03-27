@@ -10,26 +10,26 @@ class CollisionCost2D : public Cost {
     
     public:
         // (i.e. for player i = 1): Rij = [R11 R12 R13 ... R1N] nu x nplayers*nu or diagm(Rij)
-        CollisionCost2D(int n_agents, MatrixXd& Qi, MatrixXd& QNi, MatrixXd& Rij, VectorXd& xgoalin, VectorXd& r_avoid, double rho_obs)
+        CollisionCost2D(SolverParams& params, MatrixXd& Qi, MatrixXd& QNi, MatrixXd& Rij, VectorXd& xgoalin, VectorXd& r_avoid)
         {
-            n_ag = n_agents;
+            n_ag = params.n_agents;
             r = r_avoid;
-            rho = rho_obs;
+            rho = params.rho_obs;
             Q = Qi;
             QN = QNi;
             R = Rij;
             xgoal = xgoalin;
-            n_dims = Q.rows();
-            m_dims = R.rows();
+            nx = params.nx;
+            nu = params.nu;
+            // n_dims = Q.rows();
+            // m_dims = R.rows();
             dist_agents.resize(n_ag);
             dx.resize(n_ag);
             dy.resize(n_ag);
         }
 
         double TotalCost(const int i, const int H, const std::vector<VectorXd>& x, const std::vector<VectorXd>& u) override{
-            double cost;
-            const int nx = x[0].rows()/n_ag;
-            const int nu = u[0].rows()/n_ag;
+            double cost = 0.0;
 
             // Add up stage cost
             for (int k=0; k < H-2; k++)
@@ -38,7 +38,7 @@ class CollisionCost2D : public Cost {
             }
 
             // if (length(x) )
-            cost += TerminalCost(i, x[H]);
+            cost += TerminalCost(i, x[H-1]);
             return cost;
         }
 
@@ -46,7 +46,7 @@ class CollisionCost2D : public Cost {
         // TODO: Shouldn't be cost relative to goal
         double StageCost(const int i, const VectorXd &x, const VectorXd &u) override{
             // double input_cost;
-            const int nx = x.rows()/n_ag;
+
             double distance;
             double penalty_coll = 0.0;
             double dx, dy;
@@ -79,7 +79,6 @@ class CollisionCost2D : public Cost {
             // assert(lu.rows() == m_dims);
             // assert(lu.cols() == 1); 
 
-            const int nx = x.rows()/n_ag;
             double distance;
             double dx, dy;
 
@@ -112,7 +111,7 @@ class CollisionCost2D : public Cost {
         }
 
         void TerminalCostGradient(const int i, VectorXd &lx, const VectorXd& x) override{
-            assert(lx.rows() == n_dims);
+            assert(lx.rows() == x.rows());
 
             lx = QN*(x -xgoal);
         }
@@ -123,8 +122,6 @@ class CollisionCost2D : public Cost {
             // assert(luu.rows() == m_dims);
             // assert(luu.cols() == m_dims);
 
-       
-            const int nx = x.rows()/n_ag;
             double distance;
             double dx, dy;
 
@@ -214,7 +211,7 @@ class CollisionCost2D : public Cost {
         }
 
         void TerminalCostHessian(const int i, MatrixXd &lxx, const VectorXd& x) override {
-            assert(lxx.rows() == n_dims);
+            assert(lxx.rows() == x.rows());
             lxx = QN;
         }
 
@@ -229,7 +226,7 @@ class CollisionCost2D : public Cost {
         std::vector<double> dist_agents;
 
         double rho;
-        int n_dims;
-        int m_dims;
+        int nx;
+        int nu;
         int n_ag;
 }; 

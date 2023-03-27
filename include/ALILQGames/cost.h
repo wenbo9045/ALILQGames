@@ -3,6 +3,7 @@
 #include <Eigen/Dense>
 #include <iostream>
 #include <cassert>  
+#include "SolverParams.h"
 
 using Eigen::VectorXd;
 using Eigen::MatrixXd;

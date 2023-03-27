@@ -98,16 +98,16 @@ int main(){
     // Cost* pc1 = new DiffDriveCost(Q1, QN1, R1, xgoal);
     // Cost* pc2 = new DiffDriveCost(Q2, QN2, R2, xgoal);
 
-    std::vector<std::shared_ptr<Cost>> pc;  
-    pc.push_back( std::shared_ptr<Cost> (new DiffDriveCost(Q1, QN1, R1, xgoal)) );   
-    pc.push_back( std::shared_ptr<Cost> (new DiffDriveCost(Q2, QN2, R2, xgoal)) );
+    // std::vector<std::shared_ptr<Cost>> pc;  
+    // pc.push_back( std::shared_ptr<Cost> (new DiffDriveCost(Q1, QN1, R1, xgoal)) );   
+    // pc.push_back( std::shared_ptr<Cost> (new DiffDriveCost(Q2, QN2, R2, xgoal)) );
 
 
-    ALILQGames* alilqgame = new ALILQGames(Npm, pc);                 // Declare pointer to the ILQR class.
+    // ALILQGames* alilqgame = new ALILQGames(Npm, pc);                 // Declare pointer to the ILQR class.
 
-    int H = 100;
+    // int H = 100;
 
-    alilqgame->init(H);
+    // alilqgame->init(H);
 
     // // alilqgame->initial_rollout(x);
 
@@ -115,7 +115,7 @@ int main(){
 
     // // alilqgame->backward_pass();
     // // std::cout << alilqgame->getState(88) << "\n";
-    alilqgame -> solve(x0);
+    // alilqgame -> solve(x0);
 
     // // ilqr->forward_rollout(x, u);        // access a member using member access operator
 

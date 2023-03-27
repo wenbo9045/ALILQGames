@@ -34,13 +34,25 @@ int main(){
     int Nx = n_ag*nx;
     int Nu = n_ag*nu;
 
+    double dt = 0.1;
+    int H = 100;
+
+    SolverParams params;
+    params.H = H;
+    params.dt = dt;
+    params.nx = nx;
+    params.nu = nu;
+    params.n_agents = n_ag;
+    params.Nx = Nx;
+    params.Nu = Nu;
+
     // Player 1 costs
 
     MatrixXd Q1 = MatrixXd::Zero(Nx, Nx);
     Q1.block(0, 0, nx, nx) = 0.1*MatrixXd::Identity(nx, nx);
 
     MatrixXd QN1 = MatrixXd::Zero(Nx, Nx);
-    QN1.block(0, 0, nx, nx) = 10.0*MatrixXd::Identity(nx, nx);
+    QN1.block(0, 0, nx, nx) = 20.0*MatrixXd::Identity(nx, nx);
     
     MatrixXd R1 = MatrixXd::Zero(Nu, Nu);
     R1.block(0, 0, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
@@ -51,7 +63,7 @@ int main(){
     Q2.block(1*nx, 1*nx, nx, nx) = 0.1*MatrixXd::Identity(nx, nx);
 
     MatrixXd QN2 = MatrixXd::Zero(Nx, Nx);
-    QN2.block(1*nx, 1*nx, nx, nx) = 10.0*MatrixXd::Identity(nx, nx);
+    QN2.block(1*nx, 1*nx, nx, nx) = 20.0*MatrixXd::Identity(nx, nx);
     
     MatrixXd R2 = MatrixXd::Zero(Nu, Nu);
     R2.block(1*nu, 1*nu, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
@@ -67,9 +79,9 @@ int main(){
 
     u << 0.0, 0.0, 0.0, 0.0;
 
-    double dt = 0.1;
 
-    Model* pm = new PointMass(dt);                    // heap allocation
+
+    Model* pm = new PointMass(dt);                                      // heap allocation
 
     NPlayerModel* Npm = new NPlayerModel(pm, n_ag);
     vector<std::shared_ptr<Cost>> pc;
@@ -77,20 +89,18 @@ int main(){
     double rho = 500.0;
     VectorXd r_avoid(n_ag);
 
-    r_avoid(0) = 2.0;
+    r_avoid(0) = 2.0;                                                   
     r_avoid(1) = 2.0;
 
     // pc.push_back( shared_ptr<Cost> (new DiffDriveCost(Q1, QN1, R1, xgoal)) );   
     // pc.push_back( shared_ptr<Cost> (new DiffDriveCost(Q2, QN2, R2, xgoal)) );
-    pc.push_back( shared_ptr<Cost> (new CollisionCost2D(n_ag, Q1, QN1, R1, xgoal, r_avoid, rho)) );   
-    pc.push_back( shared_ptr<Cost> (new CollisionCost2D(n_ag, Q2, QN2, R2, xgoal, r_avoid, rho)) );
+    pc.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q1, QN1, R1, xgoal, r_avoid)) );   
+    pc.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q2, QN2, R2, xgoal, r_avoid)) );
 
 
-    ALILQGames* alilqgame = new ALILQGames(Npm, pc);                 // Declare pointer to the ILQR class.
+    ALILQGames* alilqgame = new ALILQGames(params, Npm, pc);                    // Declare pointer to the ILQR class.
 
-    int H = 100;
-
-    alilqgame->init(H);
+    // alilqgame->init(H);
 
     alilqgame -> solve(x0);
 
