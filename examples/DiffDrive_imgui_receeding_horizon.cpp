@@ -41,7 +41,7 @@ int main(){
     double dt = 0.1;               
 
     SolverParams params;                                // load param stuct (holds "most" solver paramters)
-    params.H = 200;                                     // horizon length
+    params.H = 100;                                     // horizon length
     params.dt = 0.1;                                    // discretization time
     params.nx = nx;                                     // single agent number of states
     params.nu = nu;                                     // single agent number of controls
@@ -72,7 +72,7 @@ int main(){
     // Player 1 Quadratic costs
 
     MatrixXd Q1 = MatrixXd::Zero(Nx, Nx);
-    Q1.block(0, 0, nx, nx) = 0.001*MatrixXd::Identity(nx, nx);
+    Q1.block(0, 0, nx, nx) = 0.1*MatrixXd::Identity(nx, nx);
 
     MatrixXd QN1 = MatrixXd::Zero(Nx, Nx);
     QN1.block(0, 0, nx, nx) = 20.0*MatrixXd::Identity(nx, nx);
@@ -83,7 +83,7 @@ int main(){
     // Player 2 Quadratic costs
 
     MatrixXd Q2 = MatrixXd::Zero(Nx, Nx);
-    Q2.block(1*nx, 1*nx, nx, nx) = 0.001*MatrixXd::Identity(nx, nx);
+    Q2.block(1*nx, 1*nx, nx, nx) = 0.1*MatrixXd::Identity(nx, nx);
 
     MatrixXd QN2 = MatrixXd::Zero(Nx, Nx);
     QN2.block(1*nx, 1*nx, nx, nx) = 20.0*MatrixXd::Identity(nx, nx);
@@ -133,7 +133,24 @@ int main(){
     ALILQGames* alilqgame = new ALILQGames(params, Npm, ptr_cost);                    // Declare pointer to the ILQR class.
 
     // solve the problem
-    alilqgame -> solve(x0);
+    // alilqgame -> solve(x0);
+
+    int EntireHorizon = 400;
+    VectorXd Xnow = x0; 
+
+    vector<VectorXd> X;
+    X.resize(EntireHorizon);
+
+    for(int k=0; k < EntireHorizon; k++)                                     //Maybe do std::fill                 
+    {
+        X[k] = VectorXd::Zero(Nx);                                  // State vector is n dimensional
+    }
+
+    for (int k =0; k<EntireHorizon; k++)
+    {
+        alilqgame -> solve(Xnow);
+        X[k] = alilqgame -> getState(1);
+    }
 
 
 // ################################# Plotting in imgui ##################################################

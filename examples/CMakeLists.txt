@@ -17,7 +17,7 @@ add_executable(pointmass_imgui pointmass_imgui.cpp)
 add_executable(DiffDrive_imgui DiffDrive_imgui.cpp)
 
 
-# Link executable to ILQR library
+# Link executable to ALILQGames library
 target_link_libraries(main
     PRIVATE                             # private dependency of the main executable (exectubales are usually private)
     # ${Python3_LIBRARIES}
