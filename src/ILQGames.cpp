@@ -1,7 +1,7 @@
-#include "ALILQGames/ALILQGames.h"
+#include "ALILQGames/ILQGames.h"
 
 
-void ALILQGames::initial_rollout(const VectorXd& x0)
+void ILQGames::initial_rollout(const VectorXd& x0)
 {
     x_k[0] = x0;                                // x0 
     
@@ -22,7 +22,7 @@ void ALILQGames::initial_rollout(const VectorXd& x0)
 
 
 // TODO: implement mpc
-void ALILQGames::forward_rollout(const VectorXd& x0)
+void ILQGames::forward_rollout(const VectorXd& x0)
 {
     // x_hat = x_k;                                                 // previous states
     // u_hat = u_k;                                                 // previous controls
@@ -50,7 +50,7 @@ void ALILQGames::forward_rollout(const VectorXd& x0)
 
 }
 
-void ALILQGames::backward_pass()
+void ILQGames::backward_pass()
 {
     // Terminal State cost to go
     for (int i=0; i < n_agents; i++)            // For each agent
@@ -165,7 +165,7 @@ void ALILQGames::backward_pass()
     }  
 }
 
-void ALILQGames::BackTrackingLineSearch(const VectorXd& x0)
+void ILQGames::BackTrackingLineSearch(const VectorXd& x0)
 {
     x_hat = x_k;                                                 // previous states
     u_hat = u_k;  
@@ -197,7 +197,7 @@ void ALILQGames::BackTrackingLineSearch(const VectorXd& x0)
     total_cost = total_cost_now;
 }
 
-void ALILQGames::ArmuijoLineSearch(const VectorXd& x0)
+void ILQGames::ArmuijoLineSearch(const VectorXd& x0)
 {
     x_hat = x_k;                                                 // previous states
     u_hat = u_k;                                                 // previous controls
@@ -233,8 +233,8 @@ void ALILQGames::ArmuijoLineSearch(const VectorXd& x0)
     // cost[i] = cost_now[i];                  // previous cost is now current cost
 }
 
-void ALILQGames::solve(const VectorXd& x0)
-{
+void ILQGames::solve(const VectorXd& x0) 
+{ 
 
     initial_rollout(x0);
 
@@ -281,12 +281,23 @@ void ALILQGames::solve(const VectorXd& x0)
 // // }
 
 
-VectorXd ALILQGames::getState(int k)
+VectorXd ILQGames::getState(int k)
 {
     return x_k[k];
 }
 
-VectorXd ALILQGames::getControl(int k)
+VectorXd ILQGames::getControl(int k)
 {
     return u_k[k];
+}
+
+double ILQGames::getStageCost(const int i, const int k)
+{
+
+    return pc[i]->StageCost(i, x_k[k], u_k[k]);
+}
+
+double ILQGames::getTerminalCost(const int i)
+{
+    return pc[i]->TerminalCost(i, x_k[H-1]);
 }

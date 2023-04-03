@@ -1,5 +1,6 @@
 #pragma once
-
+#include "Solver.h"
+#include "SolverParams.h"
 #include <iostream>
 #include "ALILQGames/ALILQGames.h"
 #include "imgui.h"
@@ -22,7 +23,7 @@ class UseImGui {
 
         void NewFrame();
 
-        virtual void Update(ALILQGames* solver);
+        virtual void Update(SolverParams& params, Solver* solver);
 
         void Render();
 

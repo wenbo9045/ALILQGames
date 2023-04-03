@@ -40,7 +40,7 @@ void render_gui()
 }
 
 
-void UseImGui::Update(ALILQGames* solver) 
+void UseImGui::Update(SolverParams& params, Solver* solver) 
 {
 	ImGui::Begin("Trajectory Visualizer");                          // Create a window called "Conan Logo" and append into it.
 	render_gui();  											// draw conan logo if user didn't override update

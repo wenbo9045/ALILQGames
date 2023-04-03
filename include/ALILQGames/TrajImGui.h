@@ -1,5 +1,6 @@
 #include <iostream>
 #include "ALILQGames/UseImGui.h"
+#include "cost.h"
 #include <stdio.h>
 #include <math.h>
 
@@ -14,13 +15,13 @@ using namespace std;
 
 class TrajImGui : public UseImGui {
 public:
-	virtual void Update(ALILQGames* solver) override {
+	virtual void Update(SolverParams& params, Solver* solver) override {
 
 		// Solver stuff
-		int H = solver->H - 1;
-		int n_agents = solver->Nmodel->MPlayers;
-		int nx = solver->Nmodel->nx;
-		int nu = solver->Nmodel->nu;
+		int H = params.H - 1;
+		int n_agents = params.n_agents;
+		int nx = params.nx;
+		int nu = params.nu;
 
 		// render your GUI
 		static float f = 0.0f;
@@ -145,10 +146,13 @@ public:
 				accel[k] = ui;
 				if (k < H)
 				{
-					cost[k] = solver->pc[i]->StageCost(i, solver->getState(k), solver->getControl(k));
+					// cost[k] = solver->pc[i]->StageCost(i, solver->getState(k), solver->getControl(k));
+					cost[k] = solver->getStageCost(i,k);
+
 				} 
 				else{
-					cost[k] = solver->pc[i]->TerminalCost(i, solver->getState(k));
+					// cost[k] = solver->pc[i]->TerminalCost(i, solver->getState(k));
+					cost[k] = solver->getTerminalCost(i);
 				}
 			}
 			const std::string labelX = "Player " + std::to_string(i + 1) + " posX";

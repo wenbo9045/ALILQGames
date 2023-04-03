@@ -16,6 +16,10 @@ add_executable(pointmass_imgui pointmass_imgui.cpp)
 
 add_executable(DiffDrive_imgui DiffDrive_imgui.cpp)
 
+add_executable(DiffDrive_imgui_ILQGame DiffDrive_imgui_ILQGame.cpp)
+
+add_executable(DiffDrive_imgui_receeding_horizon DiffDrive_imgui_receeding_horizon.cpp)
+
 
 # Link executable to ALILQGames library
 target_link_libraries(main
@@ -38,6 +42,20 @@ target_link_libraries(pointmass_imgui
     ALILQGames)
 
 target_link_libraries(DiffDrive_imgui
+    PRIVATE                             # private dependency of the main executable (exectubales are usually private)
+    imgui 
+    glfw 
+    glad
+    ALILQGames)
+
+target_link_libraries(DiffDrive_imgui_ILQGame
+    PRIVATE                             # private dependency of the main executable (exectubales are usually private)
+    imgui 
+    glfw 
+    glad
+    ALILQGames)
+
+target_link_libraries(DiffDrive_imgui_receeding_horizon
     PRIVATE                             # private dependency of the main executable (exectubales are usually private)
     imgui 
     glfw 

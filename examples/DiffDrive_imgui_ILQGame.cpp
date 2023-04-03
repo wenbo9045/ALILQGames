@@ -1,13 +1,8 @@
-#include "ALILQGames/ALILQGames.h"
 #include "ALILQGames/ILQGames.h"
-#include "ALILQGames/pointmass.h"
 #include "ALILQGames/diffdrive4d.h"
 #include "ALILQGames/NPlayerModel.h"
-#include "ALILQGames/BoxConstraint.h"
-#include "ALILQGames/CollisionConstraint2D.h"
 #include "ALILQGames/costDiffDrive.h"
 #include "ALILQGames/CollisionCost2D.h"
-#include "ALILQGames/AL.h"
 #include <iostream>
 #include <vector>
 #include <chrono>
@@ -122,79 +117,71 @@ int main(){
     ptr_cost.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q1, QN1, R1, xgoal, r_avoid)) );   
     ptr_cost.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q2, QN2, R2, xgoal, r_avoid)) );
 
-    // vector to store pointers to players' constraints
-    vector<shared_ptr<GlobalConstraints>> ptr_constr; 
-    ptr_constr.push_back( shared_ptr<GlobalConstraints> (new CollisionConstraint2D(params, r_avoid)) );
-    ptr_constr.push_back( shared_ptr<GlobalConstraints> (new BoxConstraint(umin, umax, xmin, xmax)) );   
-
-    // construct an augmented lagrangian cost
-    AL* al = new AL(params, ptr_constr);
-
     // construct the main solver
-    ALILQGames* alilqgame = new ALILQGames(params, Npm, ptr_cost, al);                    // Declare pointer to the ILQR class.
+    Solver* ilqgame = new ILQGames(params, Npm, ptr_cost);                    // Declare pointer to the ILQR class.
 
     // solve the problem
-    alilqgame -> solve(x0);
+    ilqgame -> solve(x0);
 
 
-// // ################################# Plotting in imgui ##################################################
-//     // Setup window
-// 	if (!glfwInit())
-// 		return 1;
+// ################################# Plotting in imgui ##################################################
+    // Setup window
+	if (!glfwInit())
+		return 1;
 
-//     // Decide GL+GLSL versions.
-//     #if __APPLE__
-//     // GL 3.2 + GLSL 150.
-//     const char* glsl_version = "#version 150";
-//     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-//     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-//     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-//     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // Required on Mac
-//     #else
-//     // GL 3.0 + GLSL 130.
-//     const char* glsl_version = "#version 130";
-//     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-//     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-//     // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+
-//     // only glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // 3.0+ only
-//     #endif
+    // Decide GL+GLSL versions.
+    #if __APPLE__
+    // GL 3.2 + GLSL 150.
+    const char* glsl_version = "#version 150";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // Required on Mac
+    #else
+    // GL 3.0 + GLSL 130.
+    const char* glsl_version = "#version 130";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+
+    // only glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // 3.0+ only
+    #endif
 
-// 	// Create window with graphics context
-// 	GLFWwindow *window = glfwCreateWindow(1280, 720, "Dear ImGui - Example", NULL, NULL);
-// 	if (window == NULL)
-// 		return 1;
-// 	glfwMakeContextCurrent(window);
-// 	glfwSwapInterval(1); // Enable vsync
+	// Create window with graphics context
+	GLFWwindow *window = glfwCreateWindow(1280, 720, "Dear ImGui - Example", NULL, NULL);
+	if (window == NULL)
+		return 1;
+	glfwMakeContextCurrent(window);
+	glfwSwapInterval(1); // Enable vsync
 
-// 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))  // tie window context to glad's opengl funcs
-// 		throw("Unable to context to OpenGL");
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))  // tie window context to glad's opengl funcs
+		throw("Unable to context to OpenGL");
 
-// 	int screen_width, screen_height;
-// 	glfwGetFramebufferSize(window, &screen_width, &screen_height);
-// 	glViewport(0, 0, screen_width, screen_height);
+	int screen_width, screen_height;
+	glfwGetFramebufferSize(window, &screen_width, &screen_height);
+	glViewport(0, 0, screen_width, screen_height);
 
-//     // CustomImGui myimgui;
-//     TrajImGui myimgui;
-// 	myimgui.Init(window, glsl_version);
+    // CustomImGui myimgui;
+    TrajImGui myimgui;
+	myimgui.Init(window, glsl_version);
 
-//     while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window)) {
 
-// 		glfwPollEvents();
+		glfwPollEvents();
 
 
-// 		glClear(GL_COLOR_BUFFER_BIT);
-// 		myimgui.NewFrame();
+		glClear(GL_COLOR_BUFFER_BIT);
+		myimgui.NewFrame();
 
-// 		myimgui.Update(alilqgame);
+		myimgui.Update(params, ilqgame);
 
-//         myimgui.Render();
+        myimgui.Render();
     
-//         glfwMakeContextCurrent(window);
-// 		glfwSwapBuffers(window);
+        glfwMakeContextCurrent(window);
+		glfwSwapBuffers(window);
 
-// 	}
+	}
 
-// 	myimgui.Shutdown();
+	myimgui.Shutdown();
 
     return 0;
 }

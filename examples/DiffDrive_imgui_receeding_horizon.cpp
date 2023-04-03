@@ -1,4 +1,6 @@
 #include "ALILQGames/ALILQGames.h"
+// #include "ALILQGames/Solver.h"
+#include "ALILQGames/ILQGames.h"
 #include "ALILQGames/pointmass.h"
 #include "ALILQGames/diffdrive4d.h"
 #include "ALILQGames/NPlayerModel.h"
@@ -7,6 +9,7 @@
 #include "ALILQGames/costDiffDrive.h"
 #include "ALILQGames/CollisionCost2D.h"
 #include "ALILQGames/AL.h"
+#include "ALILQGames/Solver.h"
 #include <iostream>
 #include <vector>
 #include <chrono>
@@ -130,87 +133,90 @@ int main(){
     AL* al = new AL(params, ptr_constr);
 
     // construct the main solver
-    ALILQGames* alilqgame = new ALILQGames(params, Npm, ptr_cost);                    // Declare pointer to the ILQR class.
+    // ALILQGames* alilqgame = new ALILQGames(params, Npm, ptr_cost);
+    
+    Solver* ilqgame = new ILQGames(params, Npm, ptr_cost);                    // Declare pointer to the ILQR class.
 
+    ilqgame->solve(x0);
     // solve the problem
     // alilqgame -> solve(x0);
 
-    int EntireHorizon = 400;
-    VectorXd Xnow = x0; 
+    // int EntireHorizon = 400;
+    // VectorXd Xnow = x0; 
 
-    vector<VectorXd> X;
-    X.resize(EntireHorizon);
+    // vector<VectorXd> X;
+    // X.resize(EntireHorizon);
 
-    for(int k=0; k < EntireHorizon; k++)                                     //Maybe do std::fill                 
-    {
-        X[k] = VectorXd::Zero(Nx);                                  // State vector is n dimensional
-    }
+    // for(int k=0; k < EntireHorizon; k++)                                     //Maybe do std::fill                 
+    // {
+    //     X[k] = VectorXd::Zero(Nx);                                  // State vector is n dimensional
+    // }
 
-    for (int k =0; k<EntireHorizon; k++)
-    {
-        alilqgame -> solve(Xnow);
-        X[k] = alilqgame -> getState(1);
-    }
-
-
-// ################################# Plotting in imgui ##################################################
-    // Setup window
-	if (!glfwInit())
-		return 1;
-
-    // Decide GL+GLSL versions.
-    #if __APPLE__
-    // GL 3.2 + GLSL 150.
-    const char* glsl_version = "#version 150";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // Required on Mac
-    #else
-    // GL 3.0 + GLSL 130.
-    const char* glsl_version = "#version 130";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+
-    // only glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // 3.0+ only
-    #endif
-
-	// Create window with graphics context
-	GLFWwindow *window = glfwCreateWindow(1280, 720, "Dear ImGui - Example", NULL, NULL);
-	if (window == NULL)
-		return 1;
-	glfwMakeContextCurrent(window);
-	glfwSwapInterval(1); // Enable vsync
-
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))  // tie window context to glad's opengl funcs
-		throw("Unable to context to OpenGL");
-
-	int screen_width, screen_height;
-	glfwGetFramebufferSize(window, &screen_width, &screen_height);
-	glViewport(0, 0, screen_width, screen_height);
-
-    // CustomImGui myimgui;
-    TrajImGui myimgui;
-	myimgui.Init(window, glsl_version);
-
-    while (!glfwWindowShouldClose(window)) {
-
-		glfwPollEvents();
+    // for (int k =0; k<EntireHorizon; k++)
+    // {
+    //     ilqgame -> solve(Xnow);
+    //     X[k] = ilqgame -> getState(1);
+    // }
 
 
-		glClear(GL_COLOR_BUFFER_BIT);
-		myimgui.NewFrame();
+// // ################################# Plotting in imgui ##################################################
+//     // Setup window
+// 	if (!glfwInit())
+// 		return 1;
 
-		myimgui.Update(alilqgame);
+//     // Decide GL+GLSL versions.
+//     #if __APPLE__
+//     // GL 3.2 + GLSL 150.
+//     const char* glsl_version = "#version 150";
+//     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+//     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+//     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+//     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // Required on Mac
+//     #else
+//     // GL 3.0 + GLSL 130.
+//     const char* glsl_version = "#version 130";
+//     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+//     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+//     // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+
+//     // only glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // 3.0+ only
+//     #endif
 
-        myimgui.Render();
+// 	// Create window with graphics context
+// 	GLFWwindow *window = glfwCreateWindow(1280, 720, "Dear ImGui - Example", NULL, NULL);
+// 	if (window == NULL)
+// 		return 1;
+// 	glfwMakeContextCurrent(window);
+// 	glfwSwapInterval(1); // Enable vsync
+
+// 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))  // tie window context to glad's opengl funcs
+// 		throw("Unable to context to OpenGL");
+
+// 	int screen_width, screen_height;
+// 	glfwGetFramebufferSize(window, &screen_width, &screen_height);
+// 	glViewport(0, 0, screen_width, screen_height);
+
+//     // CustomImGui myimgui;
+//     TrajImGui myimgui;
+// 	myimgui.Init(window, glsl_version);
+
+//     while (!glfwWindowShouldClose(window)) {
+
+// 		glfwPollEvents();
+
+
+// 		glClear(GL_COLOR_BUFFER_BIT);
+// 		myimgui.NewFrame();
+
+// 		myimgui.Update(ilqgame);
+
+//         myimgui.Render();
     
-        glfwMakeContextCurrent(window);
-		glfwSwapBuffers(window);
+//         glfwMakeContextCurrent(window);
+// 		glfwSwapBuffers(window);
 
-	}
+// 	}
 
-	myimgui.Shutdown();
+// 	myimgui.Shutdown();
 
     return 0;
 }

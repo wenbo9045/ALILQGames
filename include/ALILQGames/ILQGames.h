@@ -5,18 +5,17 @@
 #include <memory>
 #include "cost.h"
 #include "SolverParams.h"
-#include "AL.h"
+#include "Solver.h"
 
 using namespace std;
 
-class ALILQGames
+class ILQGames : public Solver
 {
     public:
         // Pass a Nplayer Model system, and a vector of costs of each player
 
-        ALILQGames(SolverParams& params, NPlayerModel* ptr_model, 
-                    vector<shared_ptr<Cost>> ptr_costs,
-                    AL* ptr_al) : pc(move(ptr_costs)), al(move(ptr_al))
+        ILQGames(SolverParams& params, NPlayerModel* ptr_model, 
+                    vector<shared_ptr<Cost>> ptr_costs) : pc(move(ptr_costs))
         {
             Nmodel.reset(ptr_model);                 // reset shared pointer to the model 
             dt = params.dt;
@@ -86,31 +85,36 @@ class ALILQGames
             }
         }
 
+        // ILQGames();                                     // Constructor
+
+        void initial_rollout(const VectorXd& x0) override;
+
+        void forward_rollout(const VectorXd& x0) override;
+
+        void backward_pass() override;
+
+        void BackTrackingLineSearch(const VectorXd& x0) override;
+
+        void ArmuijoLineSearch(const VectorXd& x0) override;
+
+        void solve(const VectorXd& x0) override;
+
+        // void recedingHorizon(const VectorXd& x0) override;
+
+        // Helper functions should probably be universal (in Solver.h)
+
+        VectorXd getState(int k) override;
+
+        VectorXd getControl(int k) override;
+
+        double getStageCost(const int i, const int k) override;
+
+        double getTerminalCost(const int i) override;
+   
+
         vector<shared_ptr<Cost>> pc;  
         shared_ptr<NPlayerModel> Nmodel;                   // N player model; // change this
-        shared_ptr<AL> al;
 
-        ALILQGames();                                     // Constructor
-
-        // void init(int Horizon);
-
-        void initial_rollout(const VectorXd& x0);
-
-        void forward_rollout(const VectorXd& x0);
-
-        void backward_pass();
-
-        void BackTrackingLineSearch(const VectorXd& x0);
-
-        void ArmuijoLineSearch(const VectorXd& x0);
-
-        void solve(const VectorXd& x0);
-
-        void recedingHorizon(const VectorXd& x0);
-
-        VectorXd getState(int k);
-
-        VectorXd getControl(int k);
 
         double dt;                                   // delta t
 
@@ -144,10 +148,6 @@ class ALILQGames
         vector<VectorXd> lx,lu;                // Cost Gradients
 
         vector<MatrixXd> lxx, luu, lux;        // Cost Hessians
-
-        vector<VectorXd> Lx, Lu;               // Augmented Lagrangian gradients
-
-        vector<MatrixXd> Lxx, Luu, Lux;        // Augmented Lagrangian hessian
 
         double max_grad;
 
