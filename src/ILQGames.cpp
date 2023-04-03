@@ -281,12 +281,12 @@ void ILQGames::solve(const VectorXd& x0)
 // // }
 
 
-VectorXd ILQGames::getState(int k)
+VectorXd ILQGames::getState(const int k)
 {
     return x_k[k];
 }
 
-VectorXd ILQGames::getControl(int k)
+VectorXd ILQGames::getControl(const int k)
 {
     return u_k[k];
 }

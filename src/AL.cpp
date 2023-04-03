@@ -11,11 +11,12 @@ void AL::ALGradHess(const int k, MatrixXd& Lxx, MatrixXd& Luu, MatrixXd& Lux,
                 const VectorXd& lux, const VectorXd& lx, 
                 const VectorXd& lu, const VectorXd& x, const VectorXd& u)
 {
-    ConcatConstraint(x, u);
-    ActiveConstraint(k);
+    ConcatConstraint(x, u);                             // call the constraint concatenation function
+    
+    ActiveConstraint(k);                                // check the active constraints
 
-    Lx = lx + cx.transpose() * (lambda[2] + I_mu*c);
-    Lu = lu + cu.transpose() * (lambda[2] + I_mu*c); 
+    Lx = lx + cx.transpose() * (lambda[2] + I_mu*c);    // Derivative of AL wrt x
+    Lu = lu + cu.transpose() * (lambda[2] + I_mu*c);    // Derivative of AL wrt u
     Lxx = lxx + (I_mu * cx).transpose() * cx;
     Luu = luu + (I_mu * cu).transpose() * cu;
     Lux = lux + (I_mu * cu).transpose() * cx;

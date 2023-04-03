@@ -281,12 +281,24 @@ void ALILQGames::solve(const VectorXd& x0)
 // // }
 
 
-VectorXd ALILQGames::getState(int k)
+VectorXd ALILQGames::getState(const int k)
 {
     return x_k[k];
 }
 
-VectorXd ALILQGames::getControl(int k)
+VectorXd ALILQGames::getControl(const int k)
 {
     return u_k[k];
+}
+
+// Change this to augmented lagrangian cost
+double ALILQGames::getStageCost(const int i, const int k)
+{
+
+    return pc[i]->StageCost(i, x_k[k], u_k[k]);
+}
+
+double ALILQGames::getTerminalCost(const int i)
+{
+    return pc[i]->TerminalCost(i, x_k[H-1]);
 }

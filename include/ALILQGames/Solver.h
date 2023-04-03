@@ -29,9 +29,9 @@ struct Solver
 
     virtual void recedingHorizon(const VectorXd& x0) {}
 
-    virtual VectorXd getState(int k) = 0;
+    virtual VectorXd getState(const int k) = 0;
 
-    virtual VectorXd getControl(int k) = 0;
+    virtual VectorXd getControl(const int k) = 0;
 
 
     virtual double getStageCost(const int i, const int k) = 0;

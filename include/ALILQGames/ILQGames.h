@@ -103,9 +103,9 @@ class ILQGames : public Solver
 
         // Helper functions should probably be universal (in Solver.h)
 
-        VectorXd getState(int k) override;
+        VectorXd getState(const int k) override;
 
-        VectorXd getControl(int k) override;
+        VectorXd getControl(const int k) override;
 
         double getStageCost(const int i, const int k) override;
 

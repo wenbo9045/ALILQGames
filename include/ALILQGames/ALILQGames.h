@@ -6,10 +6,11 @@
 #include "cost.h"
 #include "SolverParams.h"
 #include "AL.h"
+#include "Solver.h"
 
 using namespace std;
 
-class ALILQGames
+class ALILQGames : public Solver
 {
     public:
         // Pass a Nplayer Model system, and a vector of costs of each player
@@ -48,6 +49,13 @@ class ALILQGames
             luu.resize(n_agents);
             lux.resize(n_agents);
 
+            // Augmented Lagrangian
+            Lx.resize(n_agents);
+            Lu.resize(n_agents);
+            Lxx.resize(n_agents);
+            Luu.resize(n_agents);
+            Lux.resize(n_agents);
+
             // Backward pass stuff 
             DeltaV.resize(n_agents);
             p.resize(n_agents);
@@ -69,6 +77,13 @@ class ALILQGames
                 lxx[i] = MatrixXd::Zero(Nx, Nx);                    // Hessian of cost wrt xx and is n by n
                 luu[i] = MatrixXd::Zero(Nu, Nu);                    // Hessian of cost wrt uu and is m by m
                 lux[i] = MatrixXd::Zero(Nu, Nx);                    // Hessian of cost wrt ux and is m by n
+
+                Lx[i] = VectorXd::Zero(Nx);
+                Lu[i] = VectorXd::Zero(Nu);
+                Lxx[i] = MatrixXd::Zero(Nx, Nx);
+                Luu[i] = MatrixXd::Zero(Nu, Nu);
+                Lux[i] = MatrixXd::Zero(Nu, Nx);
+
             }
             
 
@@ -94,23 +109,29 @@ class ALILQGames
 
         // void init(int Horizon);
 
-        void initial_rollout(const VectorXd& x0);
+        void initial_rollout(const VectorXd& x0) override;
 
-        void forward_rollout(const VectorXd& x0);
+        void forward_rollout(const VectorXd& x0) override;
 
-        void backward_pass();
+        void backward_pass() override;
 
-        void BackTrackingLineSearch(const VectorXd& x0);
+        void BackTrackingLineSearch(const VectorXd& x0) override;
 
-        void ArmuijoLineSearch(const VectorXd& x0);
+        void ArmuijoLineSearch(const VectorXd& x0) override;
 
-        void solve(const VectorXd& x0);
+        void solve(const VectorXd& x0) override;
 
-        void recedingHorizon(const VectorXd& x0);
+        // void recedingHorizon(const VectorXd& x0) override;
 
-        VectorXd getState(int k);
+        // Helper functions should probably be universal (in Solver.h)
 
-        VectorXd getControl(int k);
+        VectorXd getState(const int k) override;
+
+        VectorXd getControl(const int k) override;
+
+        double getStageCost(const int i, const int k) override;
+
+        double getTerminalCost(const int i) override;
 
         double dt;                                   // delta t
 
