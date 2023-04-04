@@ -39,7 +39,7 @@ int main(){
     double dt = 0.1;               
 
     SolverParams params;                                // load param stuct (holds "most" solver paramters)
-    params.H = 200;                                     // horizon length
+    params.H = 150;                                     // horizon length
     params.dt = 0.1;                                    // discretization time
     params.nx = nx;                                     // single agent number of states
     params.nu = nu;                                     // single agent number of controls
@@ -62,15 +62,15 @@ int main(){
     // collision avoidance radius for each agent: [r1: 2.0, r2: 2.0], where 1 and 2 are the agents
     VectorXd r_avoid(n_ag);
 
-    // r_avoid(0) = 1.0;                                                   
-    // r_avoid(1) = 1.0;
-    r_avoid(0) = 0.5;                                                   
-    r_avoid(1) = 0.5;
+    r_avoid(0) = 0.7;                                                   
+    r_avoid(1) = 0.7;
+    // r_avoid(0) = 0.5;                                                   
+    // r_avoid(1) = 0.5;
 
     // Player 1 Quadratic costs
 
     MatrixXd Q1 = MatrixXd::Zero(Nx, Nx);
-    Q1.block(0, 0, nx, nx) = 0.001*MatrixXd::Identity(nx, nx);
+    Q1.block(0, 0, nx, nx) = 0.000*MatrixXd::Identity(nx, nx);
 
     MatrixXd QN1 = MatrixXd::Zero(Nx, Nx);
     QN1.block(0, 0, nx, nx) = 20.0*MatrixXd::Identity(nx, nx);
@@ -81,7 +81,7 @@ int main(){
     // Player 2 Quadratic costs
 
     MatrixXd Q2 = MatrixXd::Zero(Nx, Nx);
-    Q2.block(1*nx, 1*nx, nx, nx) = 0.001*MatrixXd::Identity(nx, nx);
+    Q2.block(1*nx, 1*nx, nx, nx) = 0.000*MatrixXd::Identity(nx, nx);
 
     MatrixXd QN2 = MatrixXd::Zero(Nx, Nx);
     QN2.block(1*nx, 1*nx, nx, nx) = 20.0*MatrixXd::Identity(nx, nx);

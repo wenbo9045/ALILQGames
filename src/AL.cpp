@@ -65,7 +65,7 @@ void AL::ConcatConstraint(const VectorXd& x, const VectorXd& u)
 
         p_prev += p;
     }
-    // cout << "c(0) " << c(1) << "\n";
+    cout << "c(0) " << c(1) << "\n";
 
 
 }

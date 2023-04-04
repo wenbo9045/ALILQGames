@@ -151,7 +151,7 @@ void ALILQGames::backward_pass()
             // Update recursive variables P, p, and delta v
 
             // DeltaV seems to blow up, check for this
-            DeltaV[i] += 0.5 * ((d_k[k].transpose() * luu[i] - 2 * lu[i].transpose()) * d_k[k]  + DeltaV[i]
+            DeltaV[i] = 0.5 * ((d_k[k].transpose() * Luu[i] - 2 * Lu[i].transpose()) * d_k[k]
             - ((P[i] * beta_k + 2 * p[i]).transpose() * beta_k).sum()) + DeltaV[i];
 
             // std::cout << "V[i] " << DeltaV[i] << "\n";
@@ -245,7 +245,7 @@ void ALILQGames::solve(const VectorXd& x0)
 
     iter_ = 0;
 
-    for(int iter=0; iter < 50; iter++)
+    for(int iter=0; iter < 100; iter++)
     {
 
         iter_cost = 0.0;
