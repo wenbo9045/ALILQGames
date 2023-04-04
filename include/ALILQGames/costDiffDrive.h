@@ -22,8 +22,6 @@ class DiffDriveCost : public Cost {
             const int nx = x[0].rows()/2;
             const int nu = u[0].rows()/2;
 
-            std::cout << nx << "\n";
-
             for (int k=0; k < H-1; k++)
             {
                 cost += StageCost(i, x[k], u[k]);

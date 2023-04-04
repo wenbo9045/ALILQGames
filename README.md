@@ -17,10 +17,12 @@
 
 ### Test:
 
-```cd examples && ./pointmass_imgui```
+```cd examples && ./DiffDrive_imgui_ILQGame```
 
 TODO:
+- Make a Receding Horizon function with and visualize it
+- Check why the augmented lagrangian is not giving smooth controls
+- Add boxes in GUI to tell if the constraints are violated or not at each time step
 - Pass SolverParams to all classes
-- Test the augmented lagrangian solver, by passing it as an optional method
 - Check why the expected change in cost is acting weird
 - Add plots to variables (i.e. velocity, controls)

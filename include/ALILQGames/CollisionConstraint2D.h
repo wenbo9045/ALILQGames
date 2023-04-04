@@ -63,7 +63,7 @@ class CollisionConstraint2D : public GlobalConstraints {
                 c(i) += r(v)*r(v);                                                          // add radius^2 to constraint
                 c(i) -= (x(nx*v) - x(nx*vnot))*(x(nx*v) - x(nx*vnot));                      // add x distance 
                 c(i) -= (x(nx*v+1) - x(nx*vnot + 1))*(x(nx*v+1) - x(nx*vnot + 1));          // add y distance
-
+                // cout << "collision " << c << "\n";
                 vnot += 1;
             }
         }

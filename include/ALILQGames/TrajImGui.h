@@ -163,9 +163,9 @@ public:
 			ImGui::PlotLines(labelX.c_str(), posX, k_step, 0, labelX.c_str(),
 					FLT_MAX, FLT_MAX,
 					ImVec2(500.0f,100.0f));
-			// ImGui::PlotLines(labelU.c_str(), accel, k_step, 0, labelU.c_str(),
-			// 		FLT_MAX, FLT_MAX,
-			// 		ImVec2(500.0f,100.0f));
+			ImGui::PlotLines(labelU.c_str(), accel, k_step, 0, labelU.c_str(),
+					FLT_MAX, FLT_MAX,
+					ImVec2(500.0f,100.0f));
 			
 			ImGui::PlotLines(labelCost.c_str(), cost, k_step, 0, labelCost.c_str(),
 					FLT_MAX, FLT_MAX,

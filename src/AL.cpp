@@ -7,16 +7,17 @@ double AL::StageMerit(const int i, const double cost)
 }
 
 void AL::ALGradHess(const int k, MatrixXd& Lxx, MatrixXd& Luu, MatrixXd& Lux,
-                VectorXd& Lx, VectorXd& Lu, const VectorXd& lxx, const VectorXd& luu,
-                const VectorXd& lux, const VectorXd& lx, 
+                VectorXd& Lx, VectorXd& Lu, const MatrixXd& lxx, const MatrixXd& luu,
+                const MatrixXd& lux, const VectorXd& lx, 
                 const VectorXd& lu, const VectorXd& x, const VectorXd& u)
 {
+    // cout << "Working " << "\n";
     ConcatConstraint(x, u);                             // call the constraint concatenation function
     
     ActiveConstraint(k);                                // check the active constraints
 
-    Lx = lx + cx.transpose() * (lambda[2] + I_mu*c);    // Derivative of AL wrt x
-    Lu = lu + cu.transpose() * (lambda[2] + I_mu*c);    // Derivative of AL wrt u
+    Lx = lx + cx.transpose() * (lambda[k] + I_mu*c);    // Derivative of AL wrt x
+    Lu = lu + cu.transpose() * (lambda[k] + I_mu*c);    // Derivative of AL wrt u
     Lxx = lxx + (I_mu * cx).transpose() * cx;
     Luu = luu + (I_mu * cu).transpose() * cu;
     Lux = lux + (I_mu * cu).transpose() * cx;
@@ -33,13 +34,12 @@ void AL::ALGradHess(const int k, MatrixXd& Lxx, MatrixXd& Luu, MatrixXd& Lux,
 
 void AL::ActiveConstraint(const int k)
 {
-    mu = 1.1;
     I_mu.setZero();
     // Check for the active contraints
     for(int ii=0; ii< I_mu.rows(); ii++)
     {
         // if constraint is active or the dual variable associated with it is not 0
-        if (c(ii) >= 0 || (std::abs(lambda[k](ii))) > 0.000001)     // if the inequality constraint is violated and the dual variable associated with it is not 0
+        if (c(ii) >= 0 || (abs(lambda[k](ii))) > 0.000001)     // if the inequality constraint is violated and the dual variable associated with it is not 0
         {
             I_mu(ii, ii) = mu;
         }
@@ -50,7 +50,11 @@ void AL::ActiveConstraint(const int k)
 // Todo: Find a better way to combine them
 void AL::ConcatConstraint(const VectorXd& x, const VectorXd& u)
 {
-    int p;                                              // number of constraints for each constraint class
+    c.setZero();
+    cx.setZero();
+    cu.setZero();
+
+    int p = 0;                                              // number of constraints for each constraint class
     int p_prev = 0;
     for (int i=0; i < ptr_cons.size(); i++)
     {
@@ -61,15 +65,19 @@ void AL::ConcatConstraint(const VectorXd& x, const VectorXd& u)
 
         p_prev += p;
     }
+    // cout << "c(0) " << c(1) << "\n";
 
-    std::cout << "C \n" << c << "\n";
+
 }
 
-void AL::DualUpdate(const std::vector<VectorXd>& x_k, const std::vector<VectorXd>& u_k)
+void AL::DualUpdate(const vector<VectorXd>& x_k, const vector<VectorXd>& u_k)
 {
-    for(int k=0; k < x_k.size(); k++)
+
+    for(int k=0; k < x_k.size() - 1; k++)
     {
         ConcatConstraint(x_k[k], u_k[k]);
+        // cout << "c(0) " << c(1) << "\n";
+        // cout << "C \n" << k << "\n";
 
         lambda[k] = (lambda[k] + mu*c).cwiseMax(0);
     }

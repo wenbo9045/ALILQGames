@@ -5,28 +5,39 @@
 #include <memory>
 #include "SolverParams.h"
 
+using namespace std;
+
 class AL
 {
     public:
         
-        AL(SolverParams& params, std::vector<std::shared_ptr<GlobalConstraints>> ptr_constr) : ptr_cons(move(ptr_constr))    
+        AL(SolverParams& params, vector<shared_ptr<GlobalConstraints>> ptr_constr) : ptr_cons(move(ptr_constr))    
         {
             I_mu = MatrixXd::Zero(params.p_inq, params.p_inq);
             c = VectorXd::Zero(params.p_inq);
             cx = MatrixXd::Zero(params.p_inq, params.Nx);
             cu = MatrixXd::Zero(params.p_inq, params.Nu);
             penalty_scale = params.penalty_scale;
+
+            mu = 10.0;
+            
+            lambda.resize(params.H);
+            // Fill multiplier for each time step 
+            for(int k=0; k < params.H; k++)                                     //Maybe do std::fill                 
+            {
+                lambda[k] = VectorXd::Zero(params.p_inq);                                  // State vector is n dimensional
+            } 
         }
 
-        std::vector<std::shared_ptr<GlobalConstraints>> ptr_cons;  // Shared pointer to the constraints
+        vector<shared_ptr<GlobalConstraints>> ptr_cons;  // Shared pointer to the constraints
 
         AL();                                           // Constructor
 
         double StageMerit(const int i, const double cost);
 
         void ALGradHess(const int k, MatrixXd& Lxx, MatrixXd& Luu, MatrixXd& Lux,
-                VectorXd& Lx, VectorXd& Lu, const VectorXd& lxx, const VectorXd& luu,
-                const VectorXd& lux, const VectorXd& lx, 
+                VectorXd& Lx, VectorXd& Lu, const MatrixXd& lxx, const MatrixXd& luu,
+                const MatrixXd& lux, const VectorXd& lx, 
                 const VectorXd& lu, const VectorXd& x, const VectorXd& u);
 
         // void ALGrad(VectorXd& Lx, VectorXd& Lu, const VectorXd& lx, 
@@ -51,6 +62,6 @@ class AL
         int inq;
         MatrixXd cx,cu;
         VectorXd c;
-        std::vector<VectorXd> lambda;               // Dual variable for ALL agents (here we are assuming no equality constraints)
+        vector<VectorXd> lambda;               // Dual variable for ALL agents (here we are assuming no equality constraints)
         double penalty_scale;
 };

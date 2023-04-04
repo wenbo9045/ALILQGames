@@ -52,8 +52,8 @@ int main(){
     params.p_inq = 2*(Nx + Nu) + n_ag*(n_ag - 1);   
 
     // lower & upper saturation limits
-    VectorXd umin = -5.0*VectorXd::Ones(nu*n_ag);
-    VectorXd umax =  5.0*VectorXd::Ones(nu*n_ag);
+    VectorXd umin = -2.0*VectorXd::Ones(nu*n_ag);
+    VectorXd umax =  2.0*VectorXd::Ones(nu*n_ag);
 
     // lower & upper state limits
     VectorXd xmin = -100.0*VectorXd::Ones(nx*n_ag);
@@ -114,10 +114,10 @@ int main(){
     // vector to store pointers to players' costs
     vector<shared_ptr<Cost>> ptr_cost;
 
-    // pc.push_back( shared_ptr<Cost> (new DiffDriveCost(Q1, QN1, R1, xgoal)) );   
-    // pc.push_back( shared_ptr<Cost> (new DiffDriveCost(Q2, QN2, R2, xgoal)) );
-    ptr_cost.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q1, QN1, R1, xgoal, r_avoid)) );   
-    ptr_cost.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q2, QN2, R2, xgoal, r_avoid)) );
+    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(Q1, QN1, R1, xgoal)) );   
+    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(Q2, QN2, R2, xgoal)) );
+    // ptr_cost.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q1, QN1, R1, xgoal, r_avoid)) );   
+    // ptr_cost.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q2, QN2, R2, xgoal, r_avoid)) );
 
     // vector to store pointers to players' constraints
     std::vector<std::shared_ptr<GlobalConstraints>> ptr_constr; 
@@ -129,6 +129,11 @@ int main(){
 
     // construct the main solver
     ALILQGames* alilqgame = new ALILQGames(params, Npm, ptr_cost, al);                    // Declare pointer to the ILQR class.
+
+    // alilqgame->initial_rollout(x0);
+
+    // alilqgame->backward_pass();
+
 
     // solve the problem
     alilqgame -> solve(x0);

@@ -79,35 +79,37 @@ void ALILQGames::backward_pass()
         {
 
             pc[i]->StageCostGradient(i, lx[i], lu[i], x_k[k], u_k[k]);
-            pc[i]->StageCostHessian(i, lxx[i], luu[i], x_k[k], u_k[k]); 
+            pc[i]->StageCostHessian(i, lxx[i], luu[i], x_k[k], u_k[k]);
 
-            bool NotPD = false;            
-            Eigen::LLT<MatrixXd> lltOflxx(lxx[i].block(i*nx, i*nx, nx, nx)); // compute the Cholesky decomposition of lxx
+            al->ALGradHess(k, Lxx[i], Luu[i], Lux[i], Lx[i], Lu[i], lxx[i], luu[i], lux[i], lx[i], lu[i], x_k[k], u_k[k]); 
+
+            // bool NotPD = false;            
+            // Eigen::LLT<MatrixXd> lltOflxx(Lxx[i].block(i*nx, i*nx, nx, nx)); // compute the Cholesky decomposition of lxx
 
             // Cheap hack to regularize the lxx matrix (this happens because of the collision constraint, which is non-convex)
             // Therefore, the hessian has negative eigen-values
             // Without regularization, the agents want to "collide"
 
-            if (lltOflxx.info() == Eigen::NumericalIssue)
-            {
-                NotPD = true;
-                // std::cout << "lxx is not PD\n " << lxx[i] << "\n";
-            }
+            // if (lltOflxx.info() == Eigen::NumericalIssue)
+            // {
+            //     NotPD = true;
+            //     std::cout << "lxx is not PD\n " << "\n";
+            // }
 
-            while(NotPD)
-            {
-                NotPD = false;
-                double max_lxx = lxx[i].block(i*nx, i*nx, nx, nx).maxCoeff();
-                // double max_lxx = lxx[i].block(i*nx, i*nx, nx, nx).lpNorm<Eigen::Infinity>();
-                lxx[i].block(i*nx, i*nx, nx, nx) += max_lxx*MatrixXd::Identity(nx, nx);
+            // while(NotPD)
+            // {
+            //     NotPD = false;
+            //     double max_lxx = lxx[i].block(i*nx, i*nx, nx, nx).maxCoeff();
+            //     // double max_lxx = lxx[i].block(i*nx, i*nx, nx, nx).lpNorm<Eigen::Infinity>();
+            //     lxx[i].block(i*nx, i*nx, nx, nx) += max_lxx*MatrixXd::Identity(nx, nx);
 
-                Eigen::LLT<MatrixXd> lltOflxx(lxx[i].block(i*nx, i*nx, nx, nx));
+            //     Eigen::LLT<MatrixXd> lltOflxx(lxx[i].block(i*nx, i*nx, nx, nx));
 
-                if (lltOflxx.info() == Eigen::NumericalIssue)
-                {
-                    NotPD = true;
-                }
-            }
+            //     if (lltOflxx.info() == Eigen::NumericalIssue)
+            //     {
+            //         NotPD = true;
+            //     }
+            // }
 
             // S = [(R¹¹ + B¹ᵀ P¹ B¹)     (B¹ᵀ P¹ B²)     ⋅⋅⋅      (B¹ᵀ P¹ Bᴺ)   ;
             //         (B²ᵀ P² B¹)     (R²² + B²ᵀ P² B²)  ⋅⋅⋅      (B²ᵀ P² Bᴺ)   ;
@@ -122,14 +124,14 @@ void ALILQGames::backward_pass()
             
             // The diagonals are overritten here
             S.block(i*nu, i*nu, nu, nu) 
-                = luu[i].block(i*nu, i*nu, nu, nu)
+                = Luu[i].block(i*nu, i*nu, nu, nu)
                 + (fu.middleCols(i*nu, nu).transpose() * P[i] * fu.middleCols(i*nu, nu));
-                
 
+            // Check the Lux 
             YK.middleRows(i*nu, nu) 
-                = fu.middleCols(i*nu, nu).transpose() * P[i] * fx;
+                = fu.middleCols(i*nu, nu).transpose() * P[i] * fx + Lux[i].middleRows(i*nu, nu);
             
-            Yd.segment(i*nu, nu) = (fu.middleCols(i*nu, nu).transpose() * p[i]) + lu[i].segment(i*nu, nu);
+            Yd.segment(i*nu, nu) = (fu.middleCols(i*nu, nu).transpose() * p[i]) + Lu[i].segment(i*nu, nu);
 
         }
         // std::cout << "S \n" << S << "\n";
@@ -154,9 +156,12 @@ void ALILQGames::backward_pass()
 
             // std::cout << "V[i] " << DeltaV[i] << "\n";
 
-            p[i] = lx[i] + (K_k[k].transpose() * (luu[i] * d_k[k] - lu[i])) + F_k.transpose() * (p[i] + P[i] * beta_k);
+            p[i] = Lx[i] + (K_k[k].transpose() * (Luu[i] * d_k[k] - Lu[i])) 
+                        + F_k.transpose() * (p[i] + P[i] * beta_k) - 2*Lux[i].transpose()*d_k[i];
 
-            P[i] = lxx[i] + (K_k[k].transpose() * luu[i] * K_k[k]) + F_k.transpose() * P[i] * F_k;
+            // P[i] = Lxx[i] + (K_k[k].transpose() * Luu[i] * K_k[k]) - Lux[i].transpose()*K_k[k] + F_k.transpose() * P[i] * F_k;
+
+            P[i] = Lxx[i] + K_k[k].transpose() * (Luu[i] * K_k[k] - Lux[i]) + F_k.transpose() * P[i] * F_k;
 
         }
 
@@ -257,8 +262,15 @@ void ALILQGames::solve(const VectorXd& x0)
         std::cout << "Total Cost Now: " << total_cost_now << "\n";
 
         BackTrackingLineSearch(x0);
-        // lineSearch(x0);
         // forward_rollout(x0);
+
+
+        al -> DualUpdate(x_k, u_k);
+
+        if (iter % 10)
+        {
+            al -> PenaltySchedule();
+        }
 
         if ( max_grad < 0.0001 ) // If the infinity norm of gradient term is less than some tolerance, converged
         {

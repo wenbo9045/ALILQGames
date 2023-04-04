@@ -61,7 +61,7 @@ int main(){
 
     int nx = 4;
     int nu = 2;
-    int n_agents = 3;
+    int n_agents = 2;
 
     SolverParams params;
     params.nx = nx;
@@ -82,7 +82,7 @@ int main(){
 
     r_avoid(0) = 1.0;
     r_avoid(1) = 1.0;
-    r_avoid(2) = 1.0;
+//     r_avoid(2) = 1.0;
     // r_avoid(3) = 1.0;
 
 
@@ -90,14 +90,14 @@ int main(){
 
     VectorXd xtest(n_agents*nx);
     xtest << 1.5, 2.5, 0.0, 0.0, 
-            1.2, 2.4, 0.0, 0.0,
-            2.3, 2.1, 0.0, 0.0;
+            1.2, 2.4, 0.0, 0.0;
+        //     2.3, 2.1, 0.0, 0.0;
             // 1.5, 1.9, 0.0, 0.0;
     
     VectorXd utest(n_agents*nu);
     utest << 1.5, 2.5, 
-            1.2, 2.4,
-            2.3, 2.1;
+            1.2, 2.4;
+        //     2.3, 2.1;
             // 0.0, 0.0;
 
     VectorXd lx = VectorXd::Zero(n_agents*nx);
