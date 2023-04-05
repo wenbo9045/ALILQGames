@@ -74,12 +74,12 @@ int main(){
     // Player 1 Quadratic costs
 
     MatrixXd Q1 = MatrixXd::Zero(Nx, Nx);
-    Q1.block(0, 0, nx, nx) = 1.0*MatrixXd::Identity(nx, nx);
+    Q1.block(0, 0, nx, nx) = 0.00*MatrixXd::Identity(nx, nx);
     // Q1(2,2) = 1.0;
     // Q1(3,3) = 1.0;
 
     MatrixXd QN1 = MatrixXd::Zero(Nx, Nx);
-    QN1.block(0, 0, nx, nx) = 30.0*MatrixXd::Identity(nx, nx);
+    QN1.block(0, 0, nx, nx) = 40.0*MatrixXd::Identity(nx, nx);
     
     MatrixXd R1 = MatrixXd::Zero(Nu, Nu);
     R1.block(0, 0, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
@@ -87,12 +87,12 @@ int main(){
     // Player 2 Quadratic costs
 
     MatrixXd Q2 = MatrixXd::Zero(Nx, Nx);
-    Q2.block(1*nx, 1*nx, nx, nx) = 1.0*MatrixXd::Identity(nx, nx);
+    Q2.block(1*nx, 1*nx, nx, nx) = 0.00*MatrixXd::Identity(nx, nx);
     // Q2(6,6) = 1.0;
     // Q2(7,7) = 1.0;
 
     MatrixXd QN2 = MatrixXd::Zero(Nx, Nx);
-    QN2.block(1*nx, 1*nx, nx, nx) = 30.0*MatrixXd::Identity(nx, nx);
+    QN2.block(1*nx, 1*nx, nx, nx) = 40.0*MatrixXd::Identity(nx, nx);
     
     MatrixXd R2 = MatrixXd::Zero(Nu, Nu);
     R2.block(1*nu, 1*nu, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);

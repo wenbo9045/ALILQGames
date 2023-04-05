@@ -24,25 +24,45 @@ public:
 		int nu = params.nu;
 
 		// render your GUI
-		static float f = 0.0f;
 		static float xs = 0.0f;
-		static int counter = 0;
+		static int selected_player_ = 0;		
+		static ImGuiComboFlags flags = 0;
+
 
 		ImGui::Begin("TrajImGui");              // Create a window called "Hello, world!" and append into it.
-
-		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-
-		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 
 		ImGui::SliderFloat("AgentPosx", &xs, 0.0f, H*1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 
 
+		// const char* items[] = { "AAAA", "BBBB", "CCCC", "DDDD", "EEEE", "FFFF", "GGGG", "HHHH", "IIII", "JJJJ", "KKKK", "LLLLLLL", "MMMM", "OOOOOOO" };
+        // static const char* item_current = items[0];            // Here our selection is a single pointer stored outside the object.
+        // ImGui::BeginCombo("combo 1", item_current, flags); // The second parameter is the label previewed before opening the combo.
+		
+		// for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+		// {
+		// 	bool is_selected = (item_current == items[n]);
+		// 	if (ImGui::Selectable(items[n], is_selected))
+		// 		item_current = items[n];
+		// 	if (is_selected)
+		// 		ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+		// }
+		// ImGui::EndCombo();
+		// ImGui::BeginCombo("Player", to_string(selected_player_ + 1).c_str());
+		// for (int agent_i = 0; agent_i < n_agents; agent_i++) 
+		// {
+		// 	const bool is_selected = (selected_player_ == agent_i);
+		// 	if (ImGui::Selectable(to_string(agent_i + 1).c_str(), is_selected))
+		// 		selected_player_ = agent_i;
+		// 	if (is_selected) 
+		// 		ImGui::SetItemDefaultFocus();
+		// }
+
+		// ImGui::EndCombo();
+
+
 		bool clear_color_changed = ImGui::ColorEdit3("clear color", (float*)clear_color); // Edit 3 floats representing a color
 
-		if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-			counter++;
 		ImGui::SameLine();
-		ImGui::Text("counter = %d", counter);
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
