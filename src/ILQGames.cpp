@@ -24,8 +24,8 @@ void ILQGames::initial_rollout(const VectorXd& x0)
 // TODO: implement mpc
 void ILQGames::forward_rollout(const VectorXd& x0)
 {
-    // x_hat = x_k;                                                 // previous states
-    // u_hat = u_k;                                                 // previous controls
+    x_hat = x_k;                                                 // previous states
+    u_hat = u_k;                                                 // previous controls
 
     x_k[0] = x0;                                                 // Inital State (will change for MPC) 
     max_grad = d_k[0].lpNorm<Eigen::Infinity>();                 // Want to store infinity norm of feedforward term (for convergence)
@@ -66,7 +66,7 @@ void ILQGames::backward_pass()
 
     // iter_cost += cost->TerminalCost(x_t[H-1]);
 
-    for(int k=H-2; k>=0; k-- )     
+    for(int k=H-2; k >= 0; k-- )     
     {
         // x_{k+1} = [A1  0  0; x_{k} + [B1  0   0; [u_1; u_2; u_3]
         //            0  A2  0;          0  B2   0;
@@ -81,12 +81,17 @@ void ILQGames::backward_pass()
             pc[i]->StageCostGradient(i, lx[i], lu[i], x_k[k], u_k[k]);
             pc[i]->StageCostHessian(i, lxx[i], luu[i], x_k[k], u_k[k]); 
 
-            bool NotPD = false;            
-            Eigen::LLT<MatrixXd> lltOflxx(lxx[i].block(i*nx, i*nx, nx, nx)); // compute the Cholesky decomposition of lxx
+
+            // std::cout << "Pnow " << k << " " << P[i] <<"\n";
+
 
             // Cheap hack to regularize the lxx matrix (this happens because of the collision constraint, which is non-convex)
             // Therefore, the hessian has negative eigen-values
             // Without regularization, the agents want to "collide"
+            bool NotPD = false;
+            lxx[i] += 0.000001*MatrixXd::Identity(Nx, Nx);
+
+            Eigen::LLT<MatrixXd> lltOflxx(lxx[i].block(i*nx, i*nx, nx, nx)); // compute the Cholesky decomposition of lxx
 
             if (lltOflxx.info() == Eigen::NumericalIssue)
             {
@@ -94,8 +99,11 @@ void ILQGames::backward_pass()
                 // std::cout << "lxx is not PD\n " << lxx[i] << "\n";
             }
 
-            while(NotPD)
+            // cout << !lxx[i].isZero(0) << "\n";
+
+            while(NotPD && !lxx[i].isZero(0))
             {
+                // std::cout << "lxx is not PD\n " << lxx[i] << "\n";
                 NotPD = false;
                 double max_lxx = lxx[i].block(i*nx, i*nx, nx, nx).maxCoeff();
                 // double max_lxx = lxx[i].block(i*nx, i*nx, nx, nx).lpNorm<Eigen::Infinity>();
@@ -108,6 +116,9 @@ void ILQGames::backward_pass()
                     NotPD = true;
                 }
             }
+
+            // cout << "working " << "\n";
+
 
             // S = [(R¹¹ + B¹ᵀ P¹ B¹)     (B¹ᵀ P¹ B²)     ⋅⋅⋅      (B¹ᵀ P¹ Bᴺ)   ;
             //         (B²ᵀ P² B¹)     (R²² + B²ᵀ P² B²)  ⋅⋅⋅      (B²ᵀ P² Bᴺ)   ;
@@ -132,8 +143,16 @@ void ILQGames::backward_pass()
             Yd.segment(i*nu, nu) = (fu.middleCols(i*nu, nu).transpose() * p[i]) + lu[i].segment(i*nu, nu);
 
         }
-        // std::cout << "S \n" << S << "\n";
 
+        // for (size_t ii = 0; ii < S.cols(); ii++) {
+        //     const float radius = S.col(ii).lpNorm<1>() - std::abs(S(ii, ii));
+        //     const float eval_lo = S(ii, ii) - radius;
+
+        //     constexpr float min_eval = 1e-3;
+        //     if (eval_lo < min_eval){ 
+        //         S(ii, ii) += radius + min_eval;
+        //     }
+        // }
 
         // Do a least squares like \ in matlab??
         S = S.inverse();
@@ -233,14 +252,15 @@ void ILQGames::ArmuijoLineSearch(const VectorXd& x0)
     // cost[i] = cost_now[i];                  // previous cost is now current cost
 }
 
-void ILQGames::solve(const VectorXd& x0) 
+void ILQGames::solve(SolverParams& params, const VectorXd& x0) 
 { 
-
     initial_rollout(x0);
 
     iter_ = 0;
 
-    for(int iter=0; iter < 50; iter++)
+    double total_cost_prev = 0.0;
+
+    for(int iter=0; iter < params.max_iter_ilq; iter++)
     {
 
         iter_cost = 0.0;
@@ -256,21 +276,22 @@ void ILQGames::solve(const VectorXd& x0)
 
         std::cout << "Total Cost Now: " << total_cost_now << "\n";
 
-        BackTrackingLineSearch(x0);
+        // BackTrackingLineSearch(x0);
         // lineSearch(x0);
-        // forward_rollout(x0);
+        forward_rollout(x0);
 
-        if ( max_grad < 0.0001 ) // If the infinity norm of gradient term is less than some tolerance, converged
+        if ( max_grad < params.grad_tol || abs(total_cost_now -  total_cost_prev) < params.cost_tol) // If the infinity norm of gradient term is less than some tolerance, converged
         {
             std::cout << "Converged!" << "\n"; 
             break;
         }
 
+        total_cost_prev = total_cost_now; 
         iter_ += 1;
     }
 
     std::cout << "Solution x[0]: " << x_k[0] << "\n";
-    std::cout << "Solution x[end]: " << x_k[99] << "\n";
+    std::cout << "Solution x[end]: " << x_k[H-1] << "\n";
     //std::cout << "Solution u[end]: " << u_t[98] << "\n";
 
 }

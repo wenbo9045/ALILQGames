@@ -29,7 +29,6 @@ class ILQGames : public Solver
             lambda.resize(H);
 
             alpha = params.alpha;
-            tol = params.tol;
             nx = params.nx;                                      // Number of states for agent i
             nu = params.nu;                                      // Number of controls for agent i
             Nx = params.Nx;                                      // Total number of states for all agents
@@ -79,9 +78,11 @@ class ILQGames : public Solver
 
             for(int k=0; k<H-1; k++)
             {
-                u_k[k] = 0.0*VectorXd::Random(Nu);                           // Input vector is m dimensional
-                K_k[k] = 0.1*MatrixXd::Random(Nu, Nx);                        // Feedback gain is m by n
-                d_k[k] = 0.1*VectorXd::Random(Nu);                            // Feedforward is m dimensional
+                u_k[k] = 0.1*VectorXd::Ones(Nu);                           // Input vector is m dimensional
+                // K_k[k] = 0.1*MatrixXd::Random(Nu, Nx);                        // Feedback gain is m by n
+                // d_k[k] = 0.1*VectorXd::Random(Nu);                            // Feedforward is m dimensional
+                K_k[k] = 0.01*MatrixXd::Ones(Nu, Nx);                        // Feedback gain is m by n
+                d_k[k] = 0.01*VectorXd::Ones(Nu);                            // Feedforward is m dimensional
             }
         }
 
@@ -97,7 +98,7 @@ class ILQGames : public Solver
 
         void ArmuijoLineSearch(const VectorXd& x0) override;
 
-        void solve(const VectorXd& x0) override;
+        void solve(SolverParams& params, const VectorXd& x0) override;
 
         // void recedingHorizon(const VectorXd& x0) override;
 
@@ -151,7 +152,7 @@ class ILQGames : public Solver
 
         double max_grad;
 
-        double alpha, tol;
+        double alpha;
 
         
         int nx;                                             // Number of states for agent i

@@ -16,7 +16,8 @@ void ALILQGames::initial_rollout(const VectorXd& x0)
     for (int i=0; i < n_agents; i++)            // For each agent
     {
         // cost[i] = pc[i]->TotalCost(i, H, x_k, u_k);
-        total_cost += pc[i]->TotalCost(i, H, x_k, u_k);
+        // total_cost += pc[i]->TotalCost(i, H, x_k, u_k);
+        total_cost += TotalCost(i);
     }
 }
 
@@ -83,34 +84,6 @@ void ALILQGames::backward_pass()
 
             al->ALGradHess(k, Lxx[i], Luu[i], Lux[i], Lx[i], Lu[i], lxx[i], luu[i], lux[i], lx[i], lu[i], x_k[k], u_k[k]); 
 
-            // bool NotPD = false;            
-            // Eigen::LLT<MatrixXd> lltOflxx(Lxx[i].block(i*nx, i*nx, nx, nx)); // compute the Cholesky decomposition of lxx
-
-            // Cheap hack to regularize the lxx matrix (this happens because of the collision constraint, which is non-convex)
-            // Therefore, the hessian has negative eigen-values
-            // Without regularization, the agents want to "collide"
-
-            // if (lltOflxx.info() == Eigen::NumericalIssue)
-            // {
-            //     NotPD = true;
-            //     std::cout << "lxx is not PD\n " << "\n";
-            // }
-
-            // while(NotPD)
-            // {
-            //     NotPD = false;
-            //     double max_lxx = lxx[i].block(i*nx, i*nx, nx, nx).maxCoeff();
-            //     // double max_lxx = lxx[i].block(i*nx, i*nx, nx, nx).lpNorm<Eigen::Infinity>();
-            //     lxx[i].block(i*nx, i*nx, nx, nx) += max_lxx*MatrixXd::Identity(nx, nx);
-
-            //     Eigen::LLT<MatrixXd> lltOflxx(lxx[i].block(i*nx, i*nx, nx, nx));
-
-            //     if (lltOflxx.info() == Eigen::NumericalIssue)
-            //     {
-            //         NotPD = true;
-            //     }
-            // }
-
             // S = [(R¹¹ + B¹ᵀ P¹ B¹)     (B¹ᵀ P¹ B²)     ⋅⋅⋅      (B¹ᵀ P¹ Bᴺ)   ;
             //         (B²ᵀ P² B¹)     (R²² + B²ᵀ P² B²)  ⋅⋅⋅      (B²ᵀ P² Bᴺ)   ;
             //              ⋅                  ⋅        ⋅                ⋅       ;
@@ -135,8 +108,16 @@ void ALILQGames::backward_pass()
 
         }
         // std::cout << "S \n" << S << "\n";
+        Eigen::LLT<MatrixXd> lltOfS(S); // compute the Cholesky decomposition of lxx
 
+        if (lltOfS.info() == Eigen::NumericalIssue)
+        {
+            // NotPD = true;
+            std::cout << "S is not PD\n " <<  "\n";
+        }
+        
 
+        // Is this a pseudoinverse?
         // Do a least squares like \ in matlab??
         S = S.inverse();
         K_k[k] = S*YK; 
@@ -174,17 +155,18 @@ void ALILQGames::BackTrackingLineSearch(const VectorXd& x0)
 {
     x_hat = x_k;                                                 // previous states
     u_hat = u_k;  
-    double alphas[6] = {1.0, 0.5, 0.25, 0.125, 0.0625, 0.03125};
+    double alphas[9] = {1.0, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0078125, 0.0};
     double total_cost_now = 0.0;
 
-    for (int i=0; i<6; i++)
+    for (double alpha_i : alphas)//(int i=0; i<8; i++)
     {
         total_cost_now = 0.0;
-        alpha = alphas[i];
+        alpha = alpha_i;
         forward_rollout(x0);
+
         for (int i=0; i < n_agents; i++)            // For each agent
         {
-            total_cost_now += pc[i]->TotalCost(i, H, x_k, u_k);
+            total_cost_now += TotalCost(i);
         }
 
         if (iter_ == 0)          // first iteration is random so we dont care about it (cost should increase)
@@ -193,11 +175,19 @@ void ALILQGames::BackTrackingLineSearch(const VectorXd& x0)
         }
 
         // if (abs(total_cost_now - total_cost) < 10000.0)
-        if (total_cost_now < total_cost)
+        if (total_cost_now < total_cost && abs(total_cost_now - total_cost) < 10000.0)
         {
             break;
         }
+
     }
+
+    if (alpha == 0.0)
+    {
+        cout << "Line search scaling is very small" << "\n";
+    }
+
+    // cout << "alpha " << alpha << "\n";
 
     total_cost = total_cost_now;
 }
@@ -238,53 +228,90 @@ void ALILQGames::ArmuijoLineSearch(const VectorXd& x0)
     // cost[i] = cost_now[i];                  // previous cost is now current cost
 }
 
-void ALILQGames::solve(const VectorXd& x0)
+void ALILQGames::solve(SolverParams& params, const VectorXd& x0)
 {
 
     initial_rollout(x0);
 
     iter_ = 0;
 
-    for(int iter=0; iter < 100; iter++)
+    // Outer loop is an augmented lagrangian
+    for(int outer_iter=0; outer_iter < params.max_iter_al; outer_iter++)
     {
 
-        iter_cost = 0.0;
-
-        backward_pass();
-
-        double total_cost_now = 0.0;
-
-        for (int i=0; i < n_agents; i++)            // For each agent
+        // Inner Loop is an ILQGame 
+        for(int inner_iter=0; inner_iter < params.max_iter_ilq; inner_iter++)
         {
-            total_cost_now += pc[i]->TotalCost(i, H, x_k, u_k);
+            iter_cost = 0.0;
+
+            backward_pass();
+
+            total_cost = 0.0;
+
+            for (int i=0; i < n_agents; i++)            // For each agent
+            {
+                total_cost += TotalCost(i);
+            }
+
+            std::cout << "Total Cost Now: " << total_cost << "\n";
+
+            BackTrackingLineSearch(x0);
+
+            if ( max_grad < params.grad_tol || alpha == 0.0) // If the infinity norm of gradient term is less than some tolerance, converged
+            {
+                std::cout << "Converged!" << "\n"; 
+                break;
+            }
+
+            iter_ += 1;
         }
 
-        std::cout << "Total Cost Now: " << total_cost_now << "\n";
 
-        BackTrackingLineSearch(x0);
-        // forward_rollout(x0);
+        // Get the max violation in constraints to check if we can converge early
+        double max_violation = 0.0;
+        double current_violation = 0.0;
 
-
-        al -> DualUpdate(x_k, u_k);
-
-        if (iter % 10)
+        for(int k=0; k < H-2; k++)                  // TODO: Fix indices for H-1 instead of H-2
         {
-            al -> PenaltySchedule();
+            current_violation = al -> MaxConstraintViolation(x_k[k], u_k[k]);
+            if (current_violation > max_violation)
+            {
+                max_violation = current_violation;
+            }
         }
 
-        if ( max_grad < 0.0001 ) // If the infinity norm of gradient term is less than some tolerance, converged
+        // If the max violation is within some tolerance, we converged
+        if ( max_violation < params.max_constraint_violation)                  
         {
-            std::cout << "Converged!" << "\n"; 
+            cout << "Converged!" << "\n"; 
             break;
         }
 
-        iter_ += 1;
+        al -> DualUpdate(x_k, u_k);
+
+        al -> PenaltySchedule();
+
     }
 
     std::cout << "Solution x[0]: " << x_k[0] << "\n";
-    std::cout << "Solution x[end]: " << x_k[99] << "\n";
+    std::cout << "Solution x[end]: " << x_k[H-1] << "\n";
     //std::cout << "Solution u[end]: " << u_t[98] << "\n";
 
+}
+
+double ALILQGames::TotalCost(const int i)
+{
+    double current_cost = 0.0;
+
+    // Add up stage cost
+    for (int k=0; k < H-2; k++)
+    {
+        current_cost += getStageCost(i, k);
+    }
+
+    // if (length(x) )
+    current_cost += getTerminalCost(i);
+    return current_cost;
 }
 
 // // void recedingHorizon(const VectorXd& x0)
@@ -306,8 +333,8 @@ VectorXd ALILQGames::getControl(const int k)
 // Change this to augmented lagrangian cost
 double ALILQGames::getStageCost(const int i, const int k)
 {
-
-    return pc[i]->StageCost(i, x_k[k], u_k[k]);
+    double cost = pc[i]->StageCost(i, x_k[k], u_k[k]);
+    return al->Merit(k, i, cost, x_k[k], u_k[k]);
 }
 
 double ALILQGames::getTerminalCost(const int i)

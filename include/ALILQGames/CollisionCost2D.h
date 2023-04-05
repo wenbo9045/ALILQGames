@@ -78,12 +78,14 @@ class CollisionCost2D : public Cost {
             // assert(lx.cols() == 1);
             // assert(lu.rows() == m_dims);
             // assert(lu.cols() == 1); 
+            lx.setZero();
+            lu.setZero();
 
             double distance;
             double dx, dy;
 
-            lx = Q*(x - xgoal);
-            lu = R*u;
+            lx = Q * (x - xgoal);
+            lu = R * u;
 
             for (int j=0; j < n_ag; j++)
             {
@@ -112,6 +114,7 @@ class CollisionCost2D : public Cost {
 
         void TerminalCostGradient(const int i, VectorXd &lx, const VectorXd& x) override{
             assert(lx.rows() == x.rows());
+            lx.setZero();
 
             lx = QN*(x -xgoal);
         }
@@ -121,6 +124,8 @@ class CollisionCost2D : public Cost {
             // assert(lxx.cols() == n_dims);
             // assert(luu.rows() == m_dims);
             // assert(luu.cols() == m_dims);
+            lxx.setZero();
+            luu.setZero();
 
             double distance;
             double dx, dy;

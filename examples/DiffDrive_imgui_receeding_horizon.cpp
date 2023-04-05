@@ -137,7 +137,7 @@ int main(){
     
     Solver* ilqgame = new ILQGames(params, Npm, ptr_cost);                    // Declare pointer to the ILQR class.
 
-    ilqgame->solve(x0);
+    ilqgame->solve(params, x0);
     // solve the problem
     // alilqgame -> solve(x0);
 

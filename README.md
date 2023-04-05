@@ -21,7 +21,6 @@
 
 TODO:
 - Make a Receding Horizon function with and visualize it
-- Check why the augmented lagrangian is not giving smooth controls
 - Add boxes in GUI to tell if the constraints are violated or not at each time step
 - Pass SolverParams to all classes
 - Check why the expected change in cost is acting weird

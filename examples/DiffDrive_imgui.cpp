@@ -134,7 +134,7 @@ int main(){
     ALILQGames* alilqgame = new ALILQGames(params, Npm, ptr_cost, al);                    // Declare pointer to the ILQR class.
 
     // solve the problem
-    alilqgame -> solve(x0);
+    alilqgame -> solve(params, x0);
 
 
 // // ################################# Plotting in imgui ##################################################

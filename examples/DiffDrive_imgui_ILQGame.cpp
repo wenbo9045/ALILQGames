@@ -37,7 +37,7 @@ int main(){
     double dt = 0.1;               
 
     SolverParams params;                                // load param stuct (holds "most" solver paramters)
-    params.H = 200;                                     // horizon length
+    params.H = 250;                                     // horizon length
     params.dt = 0.1;                                    // discretization time
     params.nx = nx;                                     // single agent number of states
     params.nu = nu;                                     // single agent number of controls
@@ -48,14 +48,6 @@ int main(){
 
     // number of inequality constraints = state and input constraints + number of collisions constraints btn agents
     params.p_inq = 2*(Nx + Nu) + n_ag*(n_ag - 1);   
-
-    // lower & upper saturation limits
-    VectorXd umin = -5.0*VectorXd::Ones(nu*n_ag);
-    VectorXd umax =  5.0*VectorXd::Ones(nu*n_ag);
-
-    // lower & upper state limits
-    VectorXd xmin = -100.0*VectorXd::Ones(nx*n_ag);
-    VectorXd xmax =  100.0*VectorXd::Ones(nx*n_ag);
 
     // collision avoidance radius for each agent: [r1: 2.0, r2: 2.0], where 1 and 2 are the agents
     VectorXd r_avoid(n_ag);
@@ -68,10 +60,11 @@ int main(){
     // Player 1 Quadratic costs
 
     MatrixXd Q1 = MatrixXd::Zero(Nx, Nx);
-    Q1.block(0, 0, nx, nx) = 0.001*MatrixXd::Identity(nx, nx);
+    Q1(3,3) = 1.0;
+    // Q1.block(0, 0, nx, nx) = 0.01*MatrixXd::Identity(nx, nx);
 
     MatrixXd QN1 = MatrixXd::Zero(Nx, Nx);
-    QN1.block(0, 0, nx, nx) = 20.0*MatrixXd::Identity(nx, nx);
+    QN1.block(0, 0, nx, nx) = 30.0*MatrixXd::Identity(nx, nx);
     
     MatrixXd R1 = MatrixXd::Zero(Nu, Nu);
     R1.block(0, 0, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
@@ -79,10 +72,11 @@ int main(){
     // Player 2 Quadratic costs
 
     MatrixXd Q2 = MatrixXd::Zero(Nx, Nx);
-    Q2.block(1*nx, 1*nx, nx, nx) = 0.001*MatrixXd::Identity(nx, nx);
+    Q2(7,7) = 1.0;
+    // Q2.block(1*nx, 1*nx, nx, nx) = 0.01*MatrixXd::Identity(nx, nx);
 
     MatrixXd QN2 = MatrixXd::Zero(Nx, Nx);
-    QN2.block(1*nx, 1*nx, nx, nx) = 20.0*MatrixXd::Identity(nx, nx);
+    QN2.block(1*nx, 1*nx, nx, nx) = 30.0*MatrixXd::Identity(nx, nx);
     
     MatrixXd R2 = MatrixXd::Zero(Nu, Nu);
     R2.block(1*nu, 1*nu, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
@@ -121,7 +115,7 @@ int main(){
     Solver* ilqgame = new ILQGames(params, Npm, ptr_cost);                    // Declare pointer to the ILQR class.
 
     // solve the problem
-    ilqgame -> solve(x0);
+    ilqgame -> solve(params, x0);
 
 
 // ################################# Plotting in imgui ##################################################

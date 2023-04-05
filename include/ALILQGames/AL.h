@@ -19,9 +19,11 @@ class AL
             cu = MatrixXd::Zero(params.p_inq, params.Nu);
             penalty_scale = params.penalty_scale;
 
-            mu = 10.0;
+            mu_original = params.penalty;
+            mu = params.penalty;
             
             lambda.resize(params.H);
+
             // Fill multiplier for each time step 
             for(int k=0; k < params.H; k++)                                     //Maybe do std::fill                 
             {
@@ -33,7 +35,8 @@ class AL
 
         AL();                                           // Constructor
 
-        double StageMerit(const int i, const double cost);
+        double Merit(const int k, const int i, const double l, 
+                        const VectorXd& x, const VectorXd& u);
 
         void ALGradHess(const int k, MatrixXd& Lxx, MatrixXd& Luu, MatrixXd& Lux,
                 VectorXd& Lx, VectorXd& Lu, const MatrixXd& lxx, const MatrixXd& luu,
@@ -50,13 +53,20 @@ class AL
 
         void ConcatConstraint(const VectorXd& x, const VectorXd& u);
 
-        void DualUpdate(const std::vector<VectorXd>& x_k, const std::vector<VectorXd>& u_k);
+        double MaxConstraintViolation(const VectorXd& x, const VectorXd& u);
+
+        void DualUpdate(const vector<VectorXd>& x_k, const vector<VectorXd>& u_k);
         
         void PenaltySchedule();
+
+        void ResetDual();
+
+        void ResetPenalty();
         // void ConcatConstraintJacob(const VectorXd& x, const VectorXd& u);
 
 
     private:
+        double mu_original;                             // is used for reseting the penalty
         double mu;
         MatrixXd I_mu;                                  // inq vs inq where inq is number of inequality constraints
         int inq;

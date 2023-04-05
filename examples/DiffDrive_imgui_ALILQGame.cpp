@@ -39,7 +39,7 @@ int main(){
     double dt = 0.1;               
 
     SolverParams params;                                // load param stuct (holds "most" solver paramters)
-    params.H = 150;                                     // horizon length
+    params.H = 200;                                     // horizon length
     params.dt = 0.1;                                    // discretization time
     params.nx = nx;                                     // single agent number of states
     params.nu = nu;                                     // single agent number of controls
@@ -58,22 +58,28 @@ int main(){
     // lower & upper state limits
     VectorXd xmin = -100.0*VectorXd::Ones(nx*n_ag);
     VectorXd xmax =  100.0*VectorXd::Ones(nx*n_ag);
+    xmin(3) = -1.0;                                     // min Velocity constraint for agent 1
+    xmin(7) = -1.0;                                     // min Velocity constraint for agent 2
+    xmax(3) =  1.0;                                     // max Velocity constraint for agent 1
+    xmax(7) =  1.0;                                     // max Velocity constraint for agent 2
 
     // collision avoidance radius for each agent: [r1: 2.0, r2: 2.0], where 1 and 2 are the agents
     VectorXd r_avoid(n_ag);
 
-    r_avoid(0) = 0.7;                                                   
-    r_avoid(1) = 0.7;
+    r_avoid(0) = 0.5;                                                   
+    r_avoid(1) = 0.5;
     // r_avoid(0) = 0.5;                                                   
     // r_avoid(1) = 0.5;
 
     // Player 1 Quadratic costs
 
     MatrixXd Q1 = MatrixXd::Zero(Nx, Nx);
-    Q1.block(0, 0, nx, nx) = 0.000*MatrixXd::Identity(nx, nx);
+    Q1.block(0, 0, nx, nx) = 1.0*MatrixXd::Identity(nx, nx);
+    // Q1(2,2) = 1.0;
+    // Q1(3,3) = 1.0;
 
     MatrixXd QN1 = MatrixXd::Zero(Nx, Nx);
-    QN1.block(0, 0, nx, nx) = 20.0*MatrixXd::Identity(nx, nx);
+    QN1.block(0, 0, nx, nx) = 30.0*MatrixXd::Identity(nx, nx);
     
     MatrixXd R1 = MatrixXd::Zero(Nu, Nu);
     R1.block(0, 0, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
@@ -81,10 +87,12 @@ int main(){
     // Player 2 Quadratic costs
 
     MatrixXd Q2 = MatrixXd::Zero(Nx, Nx);
-    Q2.block(1*nx, 1*nx, nx, nx) = 0.000*MatrixXd::Identity(nx, nx);
+    Q2.block(1*nx, 1*nx, nx, nx) = 1.0*MatrixXd::Identity(nx, nx);
+    // Q2(6,6) = 1.0;
+    // Q2(7,7) = 1.0;
 
     MatrixXd QN2 = MatrixXd::Zero(Nx, Nx);
-    QN2.block(1*nx, 1*nx, nx, nx) = 20.0*MatrixXd::Identity(nx, nx);
+    QN2.block(1*nx, 1*nx, nx, nx) = 30.0*MatrixXd::Identity(nx, nx);
     
     MatrixXd R2 = MatrixXd::Zero(Nu, Nu);
     R2.block(1*nu, 1*nu, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
@@ -120,9 +128,9 @@ int main(){
     // ptr_cost.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q2, QN2, R2, xgoal, r_avoid)) );
 
     // vector to store pointers to players' constraints
-    std::vector<std::shared_ptr<GlobalConstraints>> ptr_constr; 
-    ptr_constr.push_back( std::shared_ptr<GlobalConstraints> (new CollisionConstraint2D(params, r_avoid)) );
-    ptr_constr.push_back( std::shared_ptr<GlobalConstraints> (new BoxConstraint(umin, umax, xmin, xmax)) );   
+    vector<shared_ptr<GlobalConstraints>> ptr_constr; 
+    ptr_constr.push_back( shared_ptr<GlobalConstraints> (new CollisionConstraint2D(params, r_avoid)) );
+    ptr_constr.push_back( shared_ptr<GlobalConstraints> (new BoxConstraint(umin, umax, xmin, xmax)) );   
 
     // construct an augmented lagrangian cost
     AL* al = new AL(params, ptr_constr);
@@ -130,13 +138,9 @@ int main(){
     // construct the main solver
     ALILQGames* alilqgame = new ALILQGames(params, Npm, ptr_cost, al);                    // Declare pointer to the ILQR class.
 
-    // alilqgame->initial_rollout(x0);
-
-    // alilqgame->backward_pass();
-
 
     // solve the problem
-    alilqgame -> solve(x0);
+    alilqgame -> solve(params, x0);
 
 
 // ################################# Plotting in imgui ##################################################

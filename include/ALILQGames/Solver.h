@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cassert>
 #include <memory>
+#include "SolverParams.h"
 
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
@@ -25,7 +26,7 @@ struct Solver
 
     virtual void ArmuijoLineSearch(const VectorXd& x0) {}
 
-    virtual void solve(const VectorXd& x0) = 0;
+    virtual void solve(SolverParams& params, const VectorXd& x0) = 0;
 
     virtual void recedingHorizon(const VectorXd& x0) {}
 

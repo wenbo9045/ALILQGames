@@ -1,9 +1,14 @@
 #include "ALILQGames/AL.h"
 
 
-double AL::StageMerit(const int i, const double cost)
+double AL::Merit(const int k, const int i, const double l, 
+                    const VectorXd& x, const VectorXd& u)
 {
-    return 0.0;
+    ConcatConstraint(x, u);
+
+    ActiveConstraint(k);
+
+    return l + (lambda[k] + 0.5 * I_mu * c).transpose() * c;
 }
 
 void AL::ALGradHess(const int k, MatrixXd& Lxx, MatrixXd& Luu, MatrixXd& Lux,
@@ -11,8 +16,9 @@ void AL::ALGradHess(const int k, MatrixXd& Lxx, MatrixXd& Luu, MatrixXd& Lux,
                 const MatrixXd& lux, const VectorXd& lx, 
                 const VectorXd& lu, const VectorXd& x, const VectorXd& u)
 {
-    // cout << "Working " << "\n";
     ConcatConstraint(x, u);                             // call the constraint concatenation function
+
+    // cout << "c \n" << k << " " << c << "\n";
     
     ActiveConstraint(k);                                // check the active constraints
 
@@ -65,9 +71,23 @@ void AL::ConcatConstraint(const VectorXd& x, const VectorXd& u)
 
         p_prev += p;
     }
-    cout << "c(0) " << c(1) << "\n";
+    // cout << "c(0) " << c(1) << "\n";
 
+}
 
+double AL::MaxConstraintViolation(const VectorXd& x, const VectorXd& u)
+{
+    c.setZero();
+    int p = 0;                                              // number of constraints for each constraint class
+    int p_prev = 0;
+    // double max_c = 0.0;
+    for (int i=0; i < ptr_cons.size(); i++)
+    {
+        p = ptr_cons[i]->n_constr;
+        ptr_cons[i]->StateAndInputConstraint(c.segment(p_prev, p), x, u);
+        p_prev += p;
+    }
+    return c.maxCoeff();
 }
 
 void AL::DualUpdate(const vector<VectorXd>& x_k, const vector<VectorXd>& u_k)
@@ -80,10 +100,24 @@ void AL::DualUpdate(const vector<VectorXd>& x_k, const vector<VectorXd>& u_k)
         // cout << "C \n" << k << "\n";
 
         lambda[k] = (lambda[k] + mu*c).cwiseMax(0);
+        // lambda[k] += (mu*c).cwiseMax(0);
     }
 }
 
 void AL::PenaltySchedule()
 {
     mu *= penalty_scale;
+}
+
+void AL::ResetDual()
+{
+    for(int k=0; k < lambda.size() - 1; k++)
+    {
+        lambda[k].setZero();
+    }
+}
+
+void AL::ResetPenalty()
+{
+    mu = mu_original;
 }
