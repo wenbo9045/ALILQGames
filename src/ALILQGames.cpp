@@ -259,7 +259,7 @@ void ALILQGames::solve(SolverParams& params, const VectorXd& x0)
 
             if ( max_grad < params.grad_tol || alpha == 0.0) // If the infinity norm of gradient term is less than some tolerance, converged
             {
-                std::cout << "Converged!" << "\n"; 
+                // std::cout << "Converged!" << "\n"; 
                 break;
             }
 
@@ -293,6 +293,9 @@ void ALILQGames::solve(SolverParams& params, const VectorXd& x0)
 
     }
 
+    al->ResetDual();
+    al->ResetPenalty();
+
     std::cout << "Solution x[0]: " << x_k[0] << "\n";
     std::cout << "Solution x[end]: " << x_k[H-1] << "\n";
     //std::cout << "Solution u[end]: " << u_t[98] << "\n";
@@ -312,6 +315,19 @@ double ALILQGames::TotalCost(const int i)
     // if (length(x) )
     current_cost += getTerminalCost(i);
     return current_cost;
+}
+
+
+void ALILQGames::ChangeStrategy(const int i, const float delta)
+{
+    for(int k=0; k<H-1; k++)
+    {
+        u_k[k].setOnes();
+        u_k[k].segment(i*nu, nu) += delta*VectorXd::Ones(nu);          
+
+        K_k[k] = 0.1*MatrixXd::Ones(Nu, Nx);                        // Feedback gain is m by n
+        d_k[k] = 0.1*VectorXd::Ones(Nu);                            // Feedforward is m dimensional
+    }
 }
 
 // // void recedingHorizon(const VectorXd& x0)

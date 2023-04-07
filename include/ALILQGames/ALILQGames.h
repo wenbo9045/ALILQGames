@@ -128,6 +128,8 @@ class ALILQGames : public Solver
 
         double TotalCost(const int i);
 
+        void ChangeStrategy(const int i, const float delta) override;
+
         VectorXd getState(const int k) override;
 
         VectorXd getControl(const int k) override;

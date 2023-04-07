@@ -7,8 +7,8 @@ project(ALILQGames VERSION 1.0)               # Name of project
 #find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Debug)
-  # set(CMAKE_BUILD_TYPE Release)
+  # set(CMAKE_BUILD_TYPE Debug)
+  set(CMAKE_BUILD_TYPE Release)
 endif()
 
 add_subdirectory(include)

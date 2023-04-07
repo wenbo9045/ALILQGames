@@ -25,6 +25,8 @@ public:
 
 		// render your GUI
 		static float xs = 0.0f;
+		static float deltaStrategy = 0.0f;								// change in strategy for player i
+
 		static int selected_player_ = 0;		
 		static ImGuiComboFlags flags = 0;
 
@@ -33,7 +35,10 @@ public:
 
 
 
+
+
 		ImGui::SliderFloat("AgentPosx", &xs, 0.0f, H*1.0f);            	// Slider for trajectory iterate
+		ImGui::SliderFloat("DeltaStrategy", &deltaStrategy, -1.0f, 1.0f);            	// Slider for trajectory iterate
 
 
 		// Scrolldown menu for selecting player you are intersted in
@@ -49,6 +54,15 @@ public:
 			}
 			ImGui::EndCombo();
 		}
+
+		
+
+		if (ImGui::Button("Solve"))
+		{
+			solver -> ChangeStrategy(selected_player_, deltaStrategy);
+			solver -> solve(params, params.x0);
+		}
+
 
 		bool clear_color_changed = ImGui::ColorEdit3("clear color", (float*)clear_color); // Edit 3 floats representing a color
 

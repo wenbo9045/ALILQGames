@@ -28,6 +28,8 @@ struct Solver
 
     virtual void solve(SolverParams& params, const VectorXd& x0) = 0;
 
+    virtual void ChangeStrategy(const int i, const float delta) {}
+
     virtual void recedingHorizon(const VectorXd& x0) {}
 
     virtual VectorXd getState(const int k) = 0;

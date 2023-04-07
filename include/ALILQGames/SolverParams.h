@@ -1,4 +1,5 @@
 #pragma once
+using Eigen::VectorXd;
 
 struct SolverParams
 {
@@ -9,6 +10,7 @@ struct SolverParams
     int n_agents;                       // number of agents
     int Nx;                             // total number of concatenated states
     int Nu;                             // total number of controls
+    VectorXd x0;                        // initial state
 
     // ILQGames Solver params
     int max_iter_ilq = 100;             // Maximum number of iterations for ILQGames before terminating
