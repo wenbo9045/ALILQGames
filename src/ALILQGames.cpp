@@ -1,30 +1,33 @@
 #include "ALILQGames/ALILQGames.h"
 #include "ALILQGames/Timer.h"
+#include <algorithm>
+#include <execution>
 
-
-void ALILQGames::initial_rollout(const VectorXd& x0)
+double ALILQGames::initial_rollout(const VectorXd& x0)
 {
     x_k[0] = x0;                                // x0 
-    
-    for(int k=0; k < H-1; k++)                  
+    total_cost = 0.0;
+
+    for(size_t k=0; k < H-1; k++)                  
     {
         //u_t[k] = - K_t[k]*x_t[k] - k_t[k];                  // This is not neccasry (just an initial random rollout)
         x_k[k+1] = Nmodel->RK4(x_k[k], u_k[k] , Nmodel->dt);         // rollout nonlinear dynmaics with policy
-    }
 
-    total_cost = 0.0;
-    
-    for (int i=0; i < n_agents; i++)            // For each agent
-    {
-        // cost[i] = pc[i]->TotalCost(i, H, x_k, u_k);
-        // total_cost += pc[i]->TotalCost(i, H, x_k, u_k);
-        total_cost += TotalCost(i);
+        // for (size_t i=0; i < n_agents; i++)
+        // {
+        //     total_cost += getStageCost(i, k);
+        // }
     }
+    // for (size_t i=0; i < n_agents; i++)
+    // {
+    //     total_cost += getTerminalCost(i);
+    // }
+
+    return total_cost;
 }
 
-
 // TODO: implement mpc
-void ALILQGames::forward_rollout(const VectorXd& x0)
+double ALILQGames::forward_rollout(const VectorXd& x0)
 {
     // x_hat = x_k;                                                 // previous states
     // u_hat = u_k;                                                 // previous controls
@@ -32,15 +35,21 @@ void ALILQGames::forward_rollout(const VectorXd& x0)
     x_k[0] = x0;                                                 // Inital State (will change for MPC) 
     max_grad = d_k[0].lpNorm<Eigen::Infinity>();                 // Want to store infinity norm of feedforward term (for convergence)
 
+    double cost = 0.0;
 
     double norm_grad;
 
-    for(int k=0; k < H-1; k++)                  
+    for(size_t k=0; k < H-1; k++)                  
     {
         u_k[k] = u_hat[k] - K_k[k]*(x_k[k] - x_hat[k]) - alpha*d_k[k];        // optimal affine policy
         // std::cout << "xhat " << x_hat[k] << "\n";
         // std::cout << "x_t " << x_t[k] << "\n";
         x_k[k+1] = Nmodel->RK4(x_k[k], u_k[k] , Nmodel->dt);                      // rollout nonlinear dynmaics with policy
+
+        for (size_t i=0; i < n_agents; i++)
+        {
+            cost += getStageCost(i, k);
+        }
 
         // Store Maximum gradient (to check for convergence)
         norm_grad = d_k[k].lpNorm<Eigen::Infinity>();
@@ -50,12 +59,20 @@ void ALILQGames::forward_rollout(const VectorXd& x0)
         }
     }
 
+    for (size_t i=0; i < n_agents; i++)
+    {
+        cost += getTerminalCost(i);
+    }
+
+    return cost;
 }
 
-void ALILQGames::backward_pass()
+double ALILQGames::backward_pass()
 {
+    double cost = 0.0;
+
     // Terminal State cost to go
-    for (int i=0; i < n_agents; i++)            // For each agent
+    for (size_t i=0; i < n_agents; i++)            // For each agent
     {
         pc[i]->TerminalCostGradient(i, lx[i], x_k[H-1]);
         pc[i]->TerminalCostHessian(i, lxx[i], x_k[H-1]);
@@ -63,22 +80,17 @@ void ALILQGames::backward_pass()
         P[i] = lxx[i];
         p[i] = lx[i];
         DeltaV[i] = 0.0;
-
+        cost += getTerminalCost(i);
     }                 
 
-    // iter_cost += cost->TerminalCost(x_t[H-1]);
 
-    for(int k=H-2; k>=0; k-- )     
+    for(int k=H-2; k>=0; k--)     
     {
-        // x_{k+1} = [A1  0  0; x_{k} + [B1  0   0; [u_1; u_2; u_3]
-        //            0  A2  0;          0  B2   0;
-        //            0   0 A3]          0   0  B3]
-
         Nmodel->dynamicsJacobConcat(fx, fu, x_k[k], u_k[k]);  // get the concatenated dynamics
 
-
-        for (int i=0; i < n_agents; i++)            // For each agent
+        for (size_t i=0; i < n_agents; i++)            // For each agent
         {
+            const int inu = i*nu;
 
             pc[i]->StageCostGradient(i, lx[i], lu[i], x_k[k], u_k[k]);
             pc[i]->StageCostHessian(i, lxx[i], luu[i], x_k[k], u_k[k]);
@@ -93,19 +105,19 @@ void ALILQGames::backward_pass()
             //         (Bᴺᵀ Pᴺ B¹)        (Bᴺᵀ Pᴺ B²)     ⋅⋅⋅   (Rᴺᴺ + Bᴺᵀ Pᴺ Bᴺ)], Nu × Nu
 
             // This naively fills the entire row            #P.middleRows(i*nx, nx) change this
-            S.block(i*nu, 0, nu, Nu) 
-                = fu.middleCols(i*nu, nu).transpose() * P[i] * fu;
+            S.block(inu, 0, nu, Nu) 
+                = fu.middleCols(inu, nu).transpose() * P[i] * fu;
             
             // The diagonals are overritten here
-            S.block(i*nu, i*nu, nu, nu) 
-                = Luu[i].block(i*nu, i*nu, nu, nu)
-                + (fu.middleCols(i*nu, nu).transpose() * P[i] * fu.middleCols(i*nu, nu));
+            S.block(inu, inu, nu, nu) 
+                = Luu[i].block(inu, inu, nu, nu)
+                + (fu.middleCols(inu, nu).transpose() * P[i] * fu.middleCols(inu, nu));
 
             // Check the Lux 
-            YK.middleRows(i*nu, nu) 
-                = fu.middleCols(i*nu, nu).transpose() * P[i] * fx + Lux[i].middleRows(i*nu, nu);
+            YK.middleRows(inu, nu) 
+                = fu.middleCols(inu, nu).transpose() * P[i] * fx + Lux[i].middleRows(inu, nu);
             
-            Yd.segment(i*nu, nu) = (fu.middleCols(i*nu, nu).transpose() * p[i]) + Lu[i].segment(i*nu, nu);
+            Yd.segment(inu, nu) = (fu.middleCols(inu, nu).transpose() * p[i]) + Lu[i].segment(inu, nu);
 
         }
         // std::cout << "S \n" << S << "\n";
@@ -114,10 +126,9 @@ void ALILQGames::backward_pass()
         if (lltOfS.info() == Eigen::NumericalIssue)
         {
             // NotPD = true;
-            std::cout << "S is not PD\n " <<  "\n";
+            cout << "S is not PD\n " <<  "\n";
         }
         
-
         // Is this a pseudoinverse?
         // Do a least squares like \ in matlab??
         S = S.inverse();
@@ -127,7 +138,7 @@ void ALILQGames::backward_pass()
         F_k = fx - fu * K_k[k];
         beta_k = - fu * d_k[k];                     // n x m x m x 1 = n x 1
 
-        for (int i=0; i < n_agents; i++)            // For each agent
+        for (size_t i=0; i < n_agents; i++)            // For each agent
         {
 
             // Update recursive variables P, p, and delta v
@@ -145,11 +156,12 @@ void ALILQGames::backward_pass()
 
             P[i] = Lxx[i] + K_k[k].transpose() * (Luu[i] * K_k[k] - Lux[i]) + F_k.transpose() * P[i] * F_k;
 
+            cost += getStageCost(i, k);
+
         }
+    }
+    return cost;
 
-        // iter_cost += cost->StageCost(x_t[k], u_t[k]);
-
-    }  
 }
 
 void ALILQGames::BackTrackingLineSearch(const VectorXd& x0)
@@ -159,16 +171,16 @@ void ALILQGames::BackTrackingLineSearch(const VectorXd& x0)
     double alphas[9] = {1.0, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0078125, 0.0};
     double total_cost_now = 0.0;
 
-    for (double alpha_i : alphas)//(int i=0; i<8; i++)
+    for (const double& alpha_i : alphas)//(int i=0; i<8; i++)
     {
         total_cost_now = 0.0;
         alpha = alpha_i;
-        forward_rollout(x0);
+        total_cost_now = forward_rollout(x0);
 
-        for (int i=0; i < n_agents; i++)            // For each agent
-        {
-            total_cost_now += TotalCost(i);
-        }
+        // for (size_t i=0; i < n_agents; i++)            // For each agent
+        // {
+        //     total_cost_now += TotalCost(i);
+        // }
 
         if (iter_ == 0)          // first iteration is random so we dont care about it (cost should increase)
         {
@@ -201,7 +213,7 @@ void ALILQGames::ArmuijoLineSearch(const VectorXd& x0)
     double DeltaV_total = 0.0;
 
     forward_rollout(x0);                                       // rollout with alpha = 1
-    for (int i=0; i < n_agents; i++)            // For each agent
+    for (size_t i=0; i < n_agents; i++)            // For each agent
     {
         // Store entire previous trajectory
         total_cost_now += pc[i]->TotalCost(i, H, x_k, u_k);
@@ -234,33 +246,45 @@ void ALILQGames::solve(SolverParams& params, const VectorXd& x0)
 
     double max_violation = 0.0;
     double current_violation = 0.0;
+    cout << "Initial Rollout timer: " << "\n";
     {
         Timer timer;
         initial_rollout(x0);
-    
+    }
     iter_ = 0;
 
     // Outer loop is an augmented lagrangian
-    for(int outer_iter=0; outer_iter < params.max_iter_al; outer_iter++)
+    for(size_t outer_iter=0; outer_iter < params.max_iter_al; outer_iter++)
     {
 
         // Inner Loop is an ILQGame 
-        for(int inner_iter=0; inner_iter < params.max_iter_ilq; inner_iter++)
+        for(size_t inner_iter=0; inner_iter < params.max_iter_ilq; inner_iter++)
         {
             iter_cost = 0.0;
 
-            backward_pass();
-
-            total_cost = 0.0;
-
-            for (int i=0; i < n_agents; i++)            // For each agent
+            cout << "Backward Pass timer: " << "\n";
             {
-                total_cost += TotalCost(i);
+                Timer timer;
+                total_cost = backward_pass();
+
             }
 
-            std::cout << "Total Cost Now: " << total_cost << "\n";
+            // std::cout << "Backward Cost Now: " << total_cost << "\n";
 
-            BackTrackingLineSearch(x0);
+            // total_cost = 0.0;
+
+            // for (size_t i=0; i < n_agents; i++)            // For each agent
+            // {
+            //     total_cost += TotalCost(i);
+            // }
+
+            // std::cout << "Total Cost Now: " << total_cost << "\n";
+
+            cout << "Linesearch timer: " << "\n";
+            {
+                Timer timer;
+                BackTrackingLineSearch(x0);
+            }
 
             if ( max_grad < params.grad_tol || alpha == 0.0) // If the infinity norm of gradient term is less than some tolerance, converged
             {
@@ -276,7 +300,7 @@ void ALILQGames::solve(SolverParams& params, const VectorXd& x0)
         max_violation = 0.0;
         current_violation = 0.0;
 
-        for(int k=0; k < H-2; k++)                  // TODO: Fix indices for H-1 instead of H-2
+        for(size_t k=0; k < H-2; k++)                  // TODO: Fix indices for H-1 instead of H-2
         {
             current_violation = al -> MaxConstraintViolation(x_k[k], u_k[k]);
             if (current_violation > max_violation)
@@ -297,9 +321,9 @@ void ALILQGames::solve(SolverParams& params, const VectorXd& x0)
         al -> PenaltySchedule();
 
     }
-    }
+
     cout << "Solution x[end]: " << x_k[H-1] << "\n";
-    cout << "Solution Dual[end]: " << al->GetDual(H-2) << "\n";
+    // cout << "Solution Dual[end]: " << al->GetDual(H-2) << "\n";
     cout << "Maximum violation: " << max_violation << "\n";
 
     if (!isMPC)
@@ -314,12 +338,11 @@ double ALILQGames::TotalCost(const int i)
     double current_cost = 0.0;
 
     // Add up stage cost
-    for (int k=0; k < H-2; k++)
+    for (size_t k=0; k < H-1; k++)
     {
         current_cost += getStageCost(i, k);
     }
 
-    // if (length(x) )
     current_cost += getTerminalCost(i);
     return current_cost;
 }
@@ -337,7 +360,7 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
     //     U_k[k] = u_k[0];
     // }
 
-    for (int k=0; k < N; k++)
+    for (size_t k=0; k < N; k++)
     {
         solve(params, X_k[k]);
         X_k[k+1] = x_k[1];
@@ -361,7 +384,7 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
 
 void ALILQGames::ChangeStrategy(const int i, const float delta)
 {
-    for(int k=0; k<H-1; k++)
+    for(size_t k=0; k<H-1; k++)
     {
         u_k[k].setOnes();
         u_k[k].segment(i*nu, nu) += delta*VectorXd::Ones(nu);          

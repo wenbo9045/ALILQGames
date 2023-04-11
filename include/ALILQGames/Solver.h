@@ -10,17 +10,24 @@ using Eigen::VectorXd;
 using Eigen::MatrixXd;
 
 
+/*
+    Base Struct/Class for a Solver in this package.
+    Current Solvers are ILQGames, ALILQGames.
+    All solvers inherit from this base class.
+*/
+
+
 struct Solver
 {
 
     virtual ~Solver() = default;
 
 
-    virtual void initial_rollout(const VectorXd& x0) = 0;
+    virtual double initial_rollout(const VectorXd& x0) = 0;
 
-    virtual void forward_rollout(const VectorXd& x0) = 0;
+    virtual double forward_rollout(const VectorXd& x0) = 0;
 
-    virtual void backward_pass() = 0;
+    virtual double backward_pass() = 0;
 
     virtual void BackTrackingLineSearch(const VectorXd& x0) {}
 

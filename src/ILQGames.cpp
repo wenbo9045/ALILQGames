@@ -1,7 +1,8 @@
 #include "ALILQGames/ILQGames.h"
+#include "ALILQGames/Timer.h"
 
 
-void ILQGames::initial_rollout(const VectorXd& x0)
+double ILQGames::initial_rollout(const VectorXd& x0)
 {
     x_k[0] = x0;                                // x0 
     
@@ -18,11 +19,13 @@ void ILQGames::initial_rollout(const VectorXd& x0)
         // cost[i] = pc[i]->TotalCost(i, H, x_k, u_k);
         total_cost += pc[i]->TotalCost(i, H, x_k, u_k);
     }
+
+    return 0.0;
 }
 
 
 // TODO: implement mpc
-void ILQGames::forward_rollout(const VectorXd& x0)
+double ILQGames::forward_rollout(const VectorXd& x0)
 {
     x_hat = x_k;                                                 // previous states
     u_hat = u_k;                                                 // previous controls
@@ -47,10 +50,10 @@ void ILQGames::forward_rollout(const VectorXd& x0)
             max_grad = norm_grad;
         }
     }
-
+    return 0.0;
 }
 
-void ILQGames::backward_pass()
+double ILQGames::backward_pass()
 {
     // Terminal State cost to go
     for (int i=0; i < n_agents; i++)            // For each agent
@@ -178,10 +181,8 @@ void ILQGames::backward_pass()
             P[i] = lxx[i] + (K_k[k].transpose() * luu[i] * K_k[k]) + F_k.transpose() * P[i] * F_k;
 
         }
-
-        // iter_cost += cost->StageCost(x_t[k], u_t[k]);
-
     }  
+    return 0.0;
 }
 
 void ILQGames::BackTrackingLineSearch(const VectorXd& x0)
@@ -254,6 +255,8 @@ void ILQGames::ArmuijoLineSearch(const VectorXd& x0)
 
 void ILQGames::solve(SolverParams& params, const VectorXd& x0) 
 { 
+    {
+    Timer timer;
     initial_rollout(x0);
 
     iter_ = 0;
@@ -289,7 +292,7 @@ void ILQGames::solve(SolverParams& params, const VectorXd& x0)
         total_cost_prev = total_cost_now; 
         iter_ += 1;
     }
-
+    }
     std::cout << "Solution x[0]: " << x_k[0] << "\n";
     std::cout << "Solution x[end]: " << x_k[H-1] << "\n";
     //std::cout << "Solution u[end]: " << u_t[98] << "\n";

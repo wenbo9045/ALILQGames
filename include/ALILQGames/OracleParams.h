@@ -1,11 +1,12 @@
 #pragma once
+
 using Eigen::VectorXd;
 
 /*
-    Struct for Solver (low-level) parameters
+    Struct for high-level (orcacle) parameters
 */
 
-struct SolverParams
+struct OracleParams
 {
 
     // General Parameters

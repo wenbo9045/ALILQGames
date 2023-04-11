@@ -5,7 +5,7 @@
 #include <math.h>
 
 /* 
-TrajImGui class for rendering a 2D trajectory.
+ReceedingHorizonImGui class for rendering a 2D trajectory.
 inherits from the UseImGui base class for rendering 
 an imgui in an application.
 

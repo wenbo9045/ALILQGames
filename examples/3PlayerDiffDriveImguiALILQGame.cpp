@@ -85,7 +85,7 @@ int main(){
     // Q1(3,3) = 1.0;
 
     MatrixXd QN1 = MatrixXd::Zero(Nx, Nx);
-    QN1.block(0, 0, nx, nx) = 40.0*MatrixXd::Identity(nx, nx);
+    QN1.block(0, 0, nx, nx) = 30.0*MatrixXd::Identity(nx, nx);
     
     MatrixXd R1 = MatrixXd::Zero(Nu, Nu);
     R1.block(0, 0, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
@@ -98,7 +98,7 @@ int main(){
     // Q2(7,7) = 1.0;
 
     MatrixXd QN2 = MatrixXd::Zero(Nx, Nx);
-    QN2.block(1*nx, 1*nx, nx, nx) = 40.0*MatrixXd::Identity(nx, nx);
+    QN2.block(1*nx, 1*nx, nx, nx) = 30.0*MatrixXd::Identity(nx, nx);
     
     MatrixXd R2 = MatrixXd::Zero(Nu, Nu);
     R2.block(1*nu, 1*nu, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
@@ -111,7 +111,7 @@ int main(){
     // Q3(11,11) = 1.0;
 
     MatrixXd QN3 = MatrixXd::Zero(Nx, Nx);
-    QN3.block(2*nx, 2*nx, nx, nx) = 40.0*MatrixXd::Identity(nx, nx);
+    QN3.block(2*nx, 2*nx, nx, nx) = 30.0*MatrixXd::Identity(nx, nx);
     
     MatrixXd R3 = MatrixXd::Zero(Nu, Nu);
     R3.block(2*nu, 2*nu, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);

@@ -9,6 +9,23 @@ using Eigen::VectorXd;
 using Eigen::MatrixXd;
 
 
+/*
+    Base Struct/Class for any Single agent dynamics model
+
+    dynamics(): base function for handling continous state space linear/nonlinear models
+                with the form ẋ = f(x,u)
+    
+    stateJacob(): base function that overwrites argument "fx" with the state jacobian 
+                Overwrites DISCRETE state Jacobian
+    
+    controlJacob(): base function that overwrites argument "fu" with the control jacobian 
+                Overwrites DISCRETE control Jacobian
+
+    RK4(): Integrates dynamics with explicit RK4
+            Returns vector of state
+*/
+
+
 struct Model
 {
     int nx;                  // Number of states
@@ -35,13 +52,13 @@ struct Model
 
 
     // pass-by-reference if you want to modify the argument value in the calling function
-    // VectorXd RK4(const VectorXd &x, const VectorXd &u, double dt){
-    //     VectorXd k1 = dynamics(x, u);
-    //     VectorXd k2 = dynamics(x + 0.5*dt*k1, u); 
-    //     VectorXd k3 = dynamics(x + 0.5*dt*k2, u); 
-    //     VectorXd k4 = dynamics(x + dt*k3, u); 
+    VectorXd RK4(const VectorXd &x, const VectorXd &u, const double dt){
+        const VectorXd k1 = dynamics(x, u);
+        const VectorXd k2 = dynamics(x + 0.5*dt*k1, u); 
+        const VectorXd k3 = dynamics(x + 0.5*dt*k2, u); 
+        const VectorXd k4 = dynamics(x + dt*k3, u); 
 
-    //     return (x + (dt/6.0)*(k1 + 2*k2 + 2*k3 + k4));
-    // };
+        return (x + (dt/6.0)*(k1 + 2*k2 + 2*k3 + k4));
+    };
 
 };

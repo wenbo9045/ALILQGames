@@ -73,6 +73,22 @@ class DiffDriveCost : public Cost {
             lxx = QN;
         }
 
+        // VectorXd NAgentGoalChange(int k, const VectorXd& origin, 
+        //                                 const VectorXd& x0goal, const VectorXd& xfgoal) override
+        // {
+        //     const float dx = origin(0) - x0goal(0);
+        //     const float dy = origin(1) - x0goal(1);
+
+        //     const float R = std::sqrt(dx*dx + dy*dy);       // Radius of circle
+
+        //     const float tf = 500.0;                         // where the final goal will be at time tf
+
+        //     if (k > 300.0)
+        //         k = 300.0;
+            
+            
+        // }
+
     private:
         MatrixXd Q;
         MatrixXd QN;

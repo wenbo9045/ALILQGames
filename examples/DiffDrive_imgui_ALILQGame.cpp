@@ -144,7 +144,7 @@ int main(){
 
     // solve the problem
     // auto t0 = high_resolution_clock::now();
-    // alilqgame -> solve(params, x0);
+    alilqgame -> solve(params, x0);
     // auto t1 = high_resolution_clock::now();
 
     // /* Getting number of milliseconds as a double. */

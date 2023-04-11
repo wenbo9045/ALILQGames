@@ -3,6 +3,15 @@
 #include <memory>
 #include <chrono>
 
+/*
+    Timer class for checking the performance of a function in us, ms
+    Usage:
+    {
+        Timer timer;
+        Foo();
+    }
+*/
+
 class Timer
 {
     // Scope based class

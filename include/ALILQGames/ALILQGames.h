@@ -127,11 +127,11 @@ class ALILQGames : public Solver
 
         // void init(int Horizon);
 
-        void initial_rollout(const VectorXd& x0) override;
+        double initial_rollout(const VectorXd& x0) override;
 
-        void forward_rollout(const VectorXd& x0) override;
+        double forward_rollout(const VectorXd& x0) override;
 
-        void backward_pass() override;
+        double backward_pass() override;
 
         void BackTrackingLineSearch(const VectorXd& x0) override;
 
