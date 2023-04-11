@@ -1,5 +1,6 @@
 #include <iostream>
 #include "ALILQGames/UseImGui.h"
+#include "cost.h"
 #include <stdio.h>
 #include <math.h>
 
@@ -12,50 +13,77 @@ an imgui in an application.
 
 using namespace std;
 
-class TrajImGui : public UseImGui {
+class ReceedingHorizonImGui : public UseImGui {
 public:
-	virtual void Update(ALILQGames* solver) override {
+	virtual void Update(SolverParams& params, Solver* solver) override {
 
-		// Solver stuff
-		int H = solver->H - 1;
-		int n_agents = solver->Nmodel->MPlayers;
-		int nx = solver->Nmodel->nx;
-		int nu = solver->Nmodel->nu;
+		// Solver params
+		int H_all = params.H_all - 1;
+		int H = params.H - 1;
+		int n_agents = params.n_agents;
+		int nx = params.nx;
+		int nu = params.nu;
 
 		// render your GUI
-		static float f = 0.0f;
 		static float xs = 0.0f;
-		static int counter = 0;
+		static float deltaStrategy = 0.0f;								// change in strategy for player i
 
-		ImGui::Begin("TrajImGui");              // Create a window called "Hello, world!" and append into it.
+		static int selected_player_ = 0;		
+		static ImGuiComboFlags flags = 0;
 
-		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
 
-		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+		ImGui::Begin("TrajImGui");              						// Create a window called "TrajImGui" and append into it.
 
-		ImGui::SliderFloat("AgentPosx", &xs, 0.0f, H*1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+
+
+
+
+		ImGui::SliderFloat("AgentPosx", &xs, 0.0f, H_all*1.0f);            	// Slider for trajectory iterate
+		ImGui::SliderFloat("DeltaStrategy", &deltaStrategy, -1.0f, 1.0f);            	// Slider for trajectory iterate
+
+
+		// Scrolldown menu for selecting player you are intersted in
+		if(ImGui::BeginCombo("Player", to_string(selected_player_ + 1).c_str()))
+		{
+			for (int agent_i = 0; agent_i < n_agents; agent_i++) 
+			{
+				const bool is_selected = (selected_player_ == agent_i);
+				if (ImGui::Selectable(to_string(agent_i + 1).c_str(), is_selected))
+					selected_player_ = agent_i;
+				if (is_selected) 
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
+		}
+
+		
+
+		// if (ImGui::Button("Solve"))
+		// {
+		// 	solver -> ChangeStrategy(selected_player_, deltaStrategy);
+		// 	solver -> solve(params, params.x0);
+		// }
 
 
 		bool clear_color_changed = ImGui::ColorEdit3("clear color", (float*)clear_color); // Edit 3 floats representing a color
 
-		if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-			counter++;
 		ImGui::SameLine();
-		ImGui::Text("counter = %d", counter);
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 		ImGui::End();
 
+
+		// ############################################### Plotting 2D Traj visualization ###############################################
         ImGui::Begin("2D Visualizer Window");
-
-
+		
 		const float agent_radius = 10.0;
 
         ImDrawList *draw_list = ImGui::GetWindowDrawList();
 
         const ImVec2 mouse_position = ImGui::GetMousePos();
         ImGui::BeginChild("User Guide");
+		ImGui::TextUnformatted("Green agent is the selected one.");
         ImGui::TextUnformatted("Press \"c\" key to enable navigation.");
         ImGui::TextUnformatted("Press \"z\" key to change zoom.");
 
@@ -64,12 +92,13 @@ public:
 
 		int k_step = static_cast<int>(xs);
 
-		if (k_step > H)
+		if (k_step > H_all)
 		{
-			k_step = H-1;
+			k_step = H_all-1;
 		}
 	    std::vector<ImVec2> points(k_step);
 		for (int i = 0; i < n_agents; i++){
+			// Plotting robot path
 			for (int k=0; k<k_step; k++)
 			{
 				points[k] =
@@ -95,7 +124,16 @@ public:
 
 			const ImVec2 robotPosition = PositionToWindowCoordinates(x,y);
         	
-			draw_list->AddCircle(robotPosition, agent_radius, IM_COL32(255, 255, 0, 255));
+			if (i == selected_player_)
+			{
+				// rgba(78, 233, 39, 0.8)
+				draw_list->AddCircle(robotPosition, agent_radius, IM_COL32(78, 233, 40, 255));
+			}
+
+			else
+			{
+				draw_list->AddCircle(robotPosition, agent_radius, IM_COL32(255, 255, 0, 255));
+			}
 
 			// for pointmass 
 			// draw_list->AddLine(robotPosition, 
@@ -119,55 +157,82 @@ public:
         ImGui::EndChild();
 
 
-        // const ImVec2 window_center = WindowCenter();
-
-        // const ImVec2 p = ImGui::GetCursorScreenPos();
-        // std::cout << p[0] << "\n";
-        // float x = mouse_position.x, y =  mouse_position.y;
-
-
-
 		ImGui::End();
+
+		// ############################################ Plotting Costs, states, controls ##################################################
+
 
 		ImGui::Begin("Trajectory data");
 
 		float accel[k_step];
 		float posX[k_step];
-		float cost[k_step];
+		float posY[k_step];
+		float vel[k_step];
+		// float cost[k_step];
 
 
-		for (int i = 0; i < n_agents; i++){
+		// for (int i = 0; i < n_agents; i++){
 			for (int k=0; k<k_step; k++)
 			{
-				const float xi = solver->getState(k)[i*nx];
-				const float ui = solver->getControl(k)[i*nu];
+				// X position of player i
+				const float xi = solver->getState(k)[selected_player_*nx];	
+				// Y position of player i
+				const float yi = solver->getState(k)[selected_player_*nx + 1];
+				// Velocity position of player i
+				const float vi = solver->getState(k)[selected_player_*nx + 3];
+
+				// First control input of player i (in turtlebot case, it is just acceleration)
+				const float ui = solver->getControl(k)[selected_player_*nu];
+
 				posX[k] = xi;
+				posY[k] = yi;
+				vel[k] = vi;
 				accel[k] = ui;
-				if (k < H)
-				{
-					cost[k] = solver->pc[i]->StageCost(i, solver->getState(k), solver->getControl(k));
-				} 
-				else{
-					cost[k] = solver->pc[i]->TerminalCost(i, solver->getState(k));
-				}
+
+				// if (k < H)
+				// {
+				// 	// cost[k] = solver->pc[i]->StageCost(i, solver->getState(k), solver->getControl(k));
+				// 	cost[k] = solver->getStageCost(selected_player_, k);
+
+				// } 
+				// else{
+				// 	// cost[k] = solver->pc[i]->TerminalCost(i, solver->getState(k));
+				// 	cost[k] = solver->getTerminalCost(selected_player_);
+				// }
 			}
-			const std::string labelX = "Player " + std::to_string(i + 1) + " posX";
+			const string labelX = "Player " + to_string(selected_player_ + 1) + " X";
+			const string labelY = "Player " + to_string(selected_player_ + 1) + " Y";
+			const string labelV = "Player " + to_string(selected_player_ + 1) + " V";
 
-			const std::string labelU = "Player " + std::to_string(i + 1) + " U";
-			const std::string labelCost = "Player " + std::to_string(i + 1) + " Cost";
+			const string labelU = "Player " + to_string(selected_player_ + 1) + " U";
+			// const string labelCost = "Player " + to_string(selected_player_ + 1) + " Cost";
 
+			// Plot X 
 			ImGui::PlotLines(labelX.c_str(), posX, k_step, 0, labelX.c_str(),
 					FLT_MAX, FLT_MAX,
 					ImVec2(500.0f,100.0f));
-			// ImGui::PlotLines(labelU.c_str(), accel, k_step, 0, labelU.c_str(),
-			// 		FLT_MAX, FLT_MAX,
-			// 		ImVec2(500.0f,100.0f));
 			
-			ImGui::PlotLines(labelCost.c_str(), cost, k_step, 0, labelCost.c_str(),
+			// Plot Y
+			ImGui::PlotLines(labelY.c_str(), posY, k_step, 0, labelY.c_str(),
 					FLT_MAX, FLT_MAX,
 					ImVec2(500.0f,100.0f));
+			
+			// Plot Velocity
+			ImGui::PlotLines(labelV.c_str(), vel, k_step, 0, labelV.c_str(),
+					FLT_MAX, FLT_MAX,
+					ImVec2(500.0f,100.0f));
+
+			// Plot Acceleration
+			ImGui::PlotLines(labelU.c_str(), accel, k_step, 0, labelU.c_str(),
+					FLT_MAX, FLT_MAX,
+					ImVec2(500.0f,100.0f));
+			
+			// // Plot Cost
+			// ImGui::PlotLines(labelCost.c_str(), cost, k_step, 0, labelCost.c_str(),
+			// 		FLT_MAX, FLT_MAX,
+			// 		ImVec2(500.0f,100.0f));
         	
-		}
+		// }
 
 		ImGui::End();
 

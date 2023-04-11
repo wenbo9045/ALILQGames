@@ -97,6 +97,7 @@ public:
 		}
 	    std::vector<ImVec2> points(k_step);
 		for (int i = 0; i < n_agents; i++){
+			// Plotting robot path
 			for (int k=0; k<k_step; k++)
 			{
 				points[k] =

@@ -3,8 +3,10 @@ using Eigen::VectorXd;
 
 struct SolverParams
 {
-    int H = 100;                        // horizon length
+    int H = 100;                        // horizon length (MPC or Entire solution)
+    int H_all = 400;                    // Entire horizon length (mainly used for MPC)
     float dt = 0.1;                     // discretization time
+    bool MPC = false;                   // Solve in RH fashion or no
     int nx;                             // number of states for one agent
     int nu;                             // number of inputs for one agent
     int n_agents;                       // number of agents
@@ -14,8 +16,8 @@ struct SolverParams
 
     // ILQGames Solver params
     int max_iter_ilq = 100;             // Maximum number of iterations for ILQGames before terminating
-    double grad_tol = 1e-3;             // Solver gradient convergence tolerance
-    double cost_tol = 1e-3;             // Solver cost convergence tolerance: cost_now - cost_prev
+    double grad_tol = 1e-2;             // Solver gradient convergence tolerance
+    double cost_tol = 1e-2;             // Solver cost convergence tolerance: cost_now - cost_prev
     float rho_obs = 500.0;              // penalty for obstacle
     float alpha = 1.0;                  // linesearch parameter
 

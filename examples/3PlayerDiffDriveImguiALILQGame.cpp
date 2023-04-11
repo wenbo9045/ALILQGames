@@ -234,5 +234,7 @@ int main(){
 
 	myimgui.Shutdown();
 
+    delete alilqgame;
+
     return 0;
 }

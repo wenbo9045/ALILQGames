@@ -1,4 +1,5 @@
 #include "ALILQGames/ALILQGames.h"
+#include "ALILQGames/Timer.h"
 
 
 void ALILQGames::initial_rollout(const VectorXd& x0)
@@ -233,9 +234,10 @@ void ALILQGames::solve(SolverParams& params, const VectorXd& x0)
 
     double max_violation = 0.0;
     double current_violation = 0.0;
-
-    initial_rollout(x0);
-
+    {
+        Timer timer;
+        initial_rollout(x0);
+    
     iter_ = 0;
 
     // Outer loop is an augmented lagrangian
@@ -295,16 +297,16 @@ void ALILQGames::solve(SolverParams& params, const VectorXd& x0)
         al -> PenaltySchedule();
 
     }
-
+    }
     cout << "Solution x[end]: " << x_k[H-1] << "\n";
     cout << "Solution Dual[end]: " << al->GetDual(H-2) << "\n";
     cout << "Maximum violation: " << max_violation << "\n";
 
-    al->ResetDual();
-    al->ResetPenalty();
-    // cout << "Max Constraint Violation: "  << al->MaxConstraintViolation(x_k, u_k);
-    //std::cout << "Solution u[end]: " << u_t[98] << "\n";
-
+    if (!isMPC)
+    {
+        al->ResetDual();
+        al->ResetPenalty();
+    }
 }
 
 double ALILQGames::TotalCost(const int i)
@@ -322,6 +324,40 @@ double ALILQGames::TotalCost(const int i)
     return current_cost;
 }
 
+void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
+{ 
+    X_k[0] = x0;  
+    const int N = params.H_all;                         // Entire horizon length
+    const int Nhor = params.H;                         // MPC horizon
+
+    // for (int k=0; k < N - Nhor; k++)
+    // {
+    //     solve(params, X_k[k]);
+    //     X_k[k+1] = x_k[1];
+    //     U_k[k] = u_k[0];
+    // }
+
+    for (int k=0; k < N; k++)
+    {
+        solve(params, X_k[k]);
+        X_k[k+1] = x_k[1];
+        U_k[k] = u_k[0];
+
+        if (k%10)
+        {
+            al->ResetDual();
+            al->ResetPenalty();
+        }
+    }
+
+    // for (int k = N - Nhor; k < N; k++)
+    // {
+    //     solve(params, X_k[k]);
+    //     X_k[k+1] = x_k[1];
+    //     U_k[k] = u_k[0];
+    // }
+}
+
 
 void ALILQGames::ChangeStrategy(const int i, const float delta)
 {
@@ -335,19 +371,28 @@ void ALILQGames::ChangeStrategy(const int i, const float delta)
     }
 }
 
-// // void recedingHorizon(const VectorXd& x0)
-// // {
-
-// // }
-
-
 VectorXd ALILQGames::getState(const int k)
 {
+    if (isMPC)
+        return X_k[k];
+    else
     return x_k[k];
+
+    // if (isMPC)
+    // {
+    //     return X_k[k];
+    // }
+    // else 
+    // {
+    //     return x_k[k];
+    // }
 }
 
 VectorXd ALILQGames::getControl(const int k)
 {
+    if (isMPC)
+        return U_k[k];
+    else
     return u_k[k];
 }
 

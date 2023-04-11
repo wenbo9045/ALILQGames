@@ -8,7 +8,7 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
-#include "ALILQGames/TrajImGui.h"
+#include "ALILQGames/ReceedingHorizonImGui.h"
 #include "GLFW/glfw3.h"
 
 
@@ -32,21 +32,22 @@ int main(){
     // ################################# Declaring paramters for solver ######################################
     int nx = 4;                     
     int nu = 2;                     
-    int n_ag = 2;                   
+    int n_ag = 3;                   
     int Nx = n_ag*nx;              
     int Nu = n_ag*nu;               
 
     double dt = 0.1;               
 
     SolverParams params;                                // load param stuct (holds "most" solver paramters)
-    params.H = 200;                                     // horizon length
+    params.H_all = 300;                                 // horizon length
+    params.H = 100;                                     // MPC horizon length
+    params.MPC = true;                                  // Solve in RH fashion
     params.dt = 0.1;                                    // discretization time
     params.nx = nx;                                     // single agent number of states
     params.nu = nu;                                     // single agent number of controls
     params.n_agents = n_ag;                             // total number of homogenous agents
     params.Nx = Nx;                                     // total number of concatenated states
     params.Nu = Nu;                                     // total number of concatenated controls
-    params.rho_obs = 500.0;                             // penalty parameter for collision cost 
     
     // AL Params
     params.penalty_scale = 1.2;
@@ -63,16 +64,19 @@ int main(){
     VectorXd xmax =  100.0*VectorXd::Ones(nx*n_ag);
     xmin(3) = -0.3;                                     // min Velocity constraint for agent 1
     xmin(7) = -0.3;                                     // min Velocity constraint for agent 2
+    xmin(11) = -0.3;                                    // min Velocity constraint for agent 3
+
     xmax(3) =  0.3;                                     // max Velocity constraint for agent 1
     xmax(7) =  0.3;                                     // max Velocity constraint for agent 2
+    xmax(11) = 0.3;                                     // max Velocity constraint for agent 3
+
 
     // collision avoidance radius for each agent: [r1: 2.0, r2: 2.0], where 1 and 2 are the agents
     VectorXd r_avoid(n_ag);
 
     r_avoid(0) = 0.5;                                                   
     r_avoid(1) = 0.5;
-    // r_avoid(0) = 0.5;                                                   
-    // r_avoid(1) = 0.5;
+    r_avoid(2) = 0.5;
 
     // Player 1 Quadratic costs
 
@@ -100,33 +104,52 @@ int main(){
     MatrixXd R2 = MatrixXd::Zero(Nu, Nu);
     R2.block(1*nu, 1*nu, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
 
-    // Initialize a 2 player point mass
+    // Player 3 Quadratic costs
+
+    MatrixXd Q3 = MatrixXd::Zero(Nx, Nx);
+    Q3.block(2*nx, 2*nx, nx, nx) = 0.00*MatrixXd::Identity(nx, nx);
+    // Q3(10,10) = 1.0;
+    // Q3(11,11) = 1.0;
+
+    MatrixXd QN3 = MatrixXd::Zero(Nx, Nx);
+    QN3.block(2*nx, 2*nx, nx, nx) = 40.0*MatrixXd::Identity(nx, nx);
+    
+    MatrixXd R3 = MatrixXd::Zero(Nu, Nu);
+    R3.block(2*nu, 2*nu, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
+
 
     // Players' initial state
     VectorXd x0(Nx);
-    // x0 << 5.0, 0.0, M_PI_2, 0.0, 0.0, 5.0, 0.0, 0.0;
-    x0 << 2.5, 0.0, M_PI_2, 0.0, 0.0, 2.5, 0.0, 0.0;
 
+    x0 << 
+        1.5, 0.0, M_PI_2, 0.0,        // Agent 1
+        3.0, 0.0, M_PI_2, 0.0,        // Agent 2
+        4.5, 0.0, M_PI_2, 0.0;        // Agent 3
+
+    params.x0 = x0;
+    
     // Players' goal state
     VectorXd xgoal(Nx);
-    // xgoal << 5.0, 10.0, M_PI_2, 0.0, 10.0, 5.0, 0.0, 0.0;
-    xgoal << 2.5, 5.0, M_PI_2, 0.0, 5.0, 2.5, 0.0, 0.0;
+    xgoal <<
+        4.5, 5.0, M_PI_2, 0.0,          // Agent 1
+        3.0, 5.0, M_PI_2, 0.0,          // Agent 2   
+        1.5, 5.0, M_PI_2, 0.0;          // Agent 3
 
-    // not used
-    VectorXd u(Nu);
-    u << 0.0, 0.0, 0.0, 0.0;
-
-    // construct a point mass model 
+    // construct a Differential drive model 
     Model* ptr_model = new DiffDriveModel4D(dt);                                      // heap allocation
 
-    // construct a concatenated point mass model
+    // construct a concatenated Differential drive model
     NPlayerModel* Npm = new NPlayerModel(ptr_model, n_ag);
 
     // vector to store pointers to players' costs
     vector<shared_ptr<Cost>> ptr_cost;
 
-    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(Q1, QN1, R1, xgoal)) );   
+    // Player 1 quadratic cost
+    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(Q1, QN1, R1, xgoal)) );        
+    // Player 2 quadratic cost
     ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(Q2, QN2, R2, xgoal)) );
+    // Player 3 quadratic cost
+    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(Q3, QN3, R3, xgoal)) );
     // ptr_cost.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q1, QN1, R1, xgoal, r_avoid)) );   
     // ptr_cost.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q2, QN2, R2, xgoal, r_avoid)) );
 
@@ -144,17 +167,15 @@ int main(){
 
     // solve the problem
     // auto t0 = high_resolution_clock::now();
-    // alilqgame -> solve(params, x0);
+    alilqgame -> recedingHorizon(params, x0);
     // auto t1 = high_resolution_clock::now();
 
     // /* Getting number of milliseconds as a double. */
     // duration<double, std::milli> ms_double = t1 - t0;
     // cout << ms_double.count() << "ms\n";
 
-
-
-// ################################# Plotting in imgui ##################################################
-//    Setup window
+    // ################################# Plotting in imgui ##################################################
+    // Setup window
 	if (!glfwInit())
 		return 1;
 
@@ -190,7 +211,7 @@ int main(){
 	glViewport(0, 0, screen_width, screen_height);
 
     // CustomImGui myimgui;
-    TrajImGui myimgui;
+    ReceedingHorizonImGui myimgui;
 	myimgui.Init(window, glsl_version);
 
     while (!glfwWindowShouldClose(window)) {
@@ -213,6 +234,7 @@ int main(){
 	myimgui.Shutdown();
 
     delete alilqgame;
+
 
     return 0;
 }

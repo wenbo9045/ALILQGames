@@ -177,5 +177,7 @@ int main(){
 
 	myimgui.Shutdown();
 
+    delete ilqgame;
+
     return 0;
 }

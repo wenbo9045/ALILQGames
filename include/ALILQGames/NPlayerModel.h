@@ -46,11 +46,11 @@ class NPlayerModel
         void dynamicsJacobConcat(MatrixXd &fx, MatrixXd &fu, const VectorXd& x, const VectorXd& u);
 
         // pass-by-reference if you want to modify the argument value in the calling function
-        VectorXd RK4(const VectorXd &x, const VectorXd &u, double dt){
-            VectorXd k1 = dynamics_concat(x, u);
-            VectorXd k2 = dynamics_concat(x + 0.5*dt*k1, u); 
-            VectorXd k3 = dynamics_concat(x + 0.5*dt*k2, u); 
-            VectorXd k4 = dynamics_concat(x + dt*k3, u); 
+        VectorXd RK4(const VectorXd &x, const VectorXd &u, const double dt){
+            const VectorXd k1 = dynamics_concat(x, u);
+            const VectorXd k2 = dynamics_concat(x + 0.5*dt*k1, u); 
+            const VectorXd k3 = dynamics_concat(x + 0.5*dt*k2, u); 
+            const VectorXd k4 = dynamics_concat(x + dt*k3, u); 
 
             return (x + (dt/6.0)*(k1 + 2*k2 + 2*k3 + k4));
         };

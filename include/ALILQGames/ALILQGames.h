@@ -23,6 +23,23 @@ class ALILQGames : public Solver
             dt = params.dt;
             H = params.H;
 
+            isMPC = params.MPC;
+
+            if (isMPC)                         // If we are solving with MPC
+            {
+                X_k.resize(params.H_all);
+                U_k.resize(params.H_all - 1);
+
+                for(int k=0; k < params.H_all; k++)                               //Maybe do std::fill                 
+                {
+                    X_k[k] = VectorXd::Zero(Nx);                                  // State vector is n dimensional
+                }
+                for(int k=0; k < params.H_all - 1; k++)                                         
+                {
+                    U_k[k] = VectorXd::Zero(Nu);                                
+                }
+            }
+
             // populate terms for entire horizon
             x_k.resize(H);
             u_k.resize(H-1);
@@ -122,7 +139,7 @@ class ALILQGames : public Solver
 
         void solve(SolverParams& params, const VectorXd& x0) override;
 
-        // void recedingHorizon(const VectorXd& x0) override;
+        void recedingHorizon(SolverParams& params, const VectorXd& x0) override;
 
         // Helper functions should probably be universal (in Solver.h)
 
@@ -148,9 +165,15 @@ class ALILQGames : public Solver
 
     private:
 
-        vector<VectorXd> x_k;                  // States over the entire Horizon 
+        bool isMPC;
 
-        vector<VectorXd> u_k;                  // Control inputs over the entire Horizon
+        vector<VectorXd> X_k;                  // States over the entire Horizon 
+
+        vector<VectorXd> U_k;                  // Control inputs over the entire Horizon
+
+        vector<VectorXd> x_k;                  // States over the MPC Horizon 
+
+        vector<VectorXd> u_k;                  // Control inputs over the MPC Horizon
 
         vector<VectorXd> lambda;               // Dual variable for ALL agents (here we are assuming no equality constraints)
 
