@@ -22,7 +22,7 @@ struct SolverParams
     // Augmented Lagrangian params
     int max_iter_al = 25;               // Maximum number of iterations for the AL before terminating
     int p_inq;                          // number of inequality constraints
-    double max_constraint_violation = 1e-3;
+    double max_constraint_violation = 1e-2;
     double penalty = 10.0;              // penalty value for augmented lagrangian
     double penalty_scale = 1.5;         // penalty schedule for augmented lagrangian
 };

@@ -231,6 +231,9 @@ void ALILQGames::ArmuijoLineSearch(const VectorXd& x0)
 void ALILQGames::solve(SolverParams& params, const VectorXd& x0)
 {
 
+    double max_violation = 0.0;
+    double current_violation = 0.0;
+
     initial_rollout(x0);
 
     iter_ = 0;
@@ -268,8 +271,8 @@ void ALILQGames::solve(SolverParams& params, const VectorXd& x0)
 
 
         // Get the max violation in constraints to check if we can converge early
-        double max_violation = 0.0;
-        double current_violation = 0.0;
+        max_violation = 0.0;
+        current_violation = 0.0;
 
         for(int k=0; k < H-2; k++)                  // TODO: Fix indices for H-1 instead of H-2
         {
@@ -293,11 +296,13 @@ void ALILQGames::solve(SolverParams& params, const VectorXd& x0)
 
     }
 
+    cout << "Solution x[end]: " << x_k[H-1] << "\n";
+    cout << "Solution Dual[end]: " << al->GetDual(H-2) << "\n";
+    cout << "Maximum violation: " << max_violation << "\n";
+
     al->ResetDual();
     al->ResetPenalty();
-
-    std::cout << "Solution x[0]: " << x_k[0] << "\n";
-    std::cout << "Solution x[end]: " << x_k[H-1] << "\n";
+    // cout << "Max Constraint Violation: "  << al->MaxConstraintViolation(x_k, u_k);
     //std::cout << "Solution u[end]: " << u_t[98] << "\n";
 
 }

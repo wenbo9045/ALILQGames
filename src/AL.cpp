@@ -121,3 +121,8 @@ void AL::ResetPenalty()
 {
     mu = mu_original;
 }
+
+VectorXd AL::GetDual(const int k)
+{
+    return lambda[k];
+}

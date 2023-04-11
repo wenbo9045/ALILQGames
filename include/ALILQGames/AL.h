@@ -62,6 +62,8 @@ class AL
         void ResetDual();
 
         void ResetPenalty();
+
+        VectorXd GetDual(const int k);
         // void ConcatConstraintJacob(const VectorXd& x, const VectorXd& u);
 
 
