@@ -112,6 +112,10 @@ int main(){
     // xgoal << 5.0, 10.0, M_PI_2, 0.0, 10.0, 5.0, 0.0, 0.0;
     xgoal << 2.5, 5.0, M_PI_2, 0.0, 5.0, 2.5, 0.0, 0.0;
 
+    OracleParams oracleparams;
+    oracleparams.GoalisChanging = false;
+    oracleparams.x0goal = xgoal;
+
     // not used
     VectorXd u(Nu);
     u << 0.0, 0.0, 0.0, 0.0;
@@ -125,8 +129,10 @@ int main(){
     // vector to store pointers to players' costs
     vector<shared_ptr<Cost>> ptr_cost;
 
-    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(Q1, QN1, R1, xgoal)) );   
-    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(Q2, QN2, R2, xgoal)) );
+    // Player 1 quadratic cost
+    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(oracleparams, Q1, QN1, R1)) );        
+    // Player 2 quadratic cost
+    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(oracleparams, Q2, QN2, R2)) );
     // ptr_cost.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q1, QN1, R1, xgoal, r_avoid)) );   
     // ptr_cost.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q2, QN2, R2, xgoal, r_avoid)) );
 

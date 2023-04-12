@@ -67,7 +67,7 @@ double ALILQGames::forward_rollout(const VectorXd& x0)
     return cost;
 }
 
-double ALILQGames::backward_pass()
+double ALILQGames::backward_pass(const int k)
 {
     double cost = 0.0;
 
@@ -104,7 +104,7 @@ double ALILQGames::backward_pass()
             //              ⋅                  ⋅              ⋅          ⋅       ;
             //         (Bᴺᵀ Pᴺ B¹)        (Bᴺᵀ Pᴺ B²)     ⋅⋅⋅   (Rᴺᴺ + Bᴺᵀ Pᴺ Bᴺ)], Nu × Nu
 
-            // This naively fills the entire row            #P.middleRows(i*nx, nx) change this
+            // This naively fills the entire row       
             S.block(inu, 0, nu, Nu) 
                 = fu.middleCols(inu, nu).transpose() * P[i] * fu;
             
@@ -120,7 +120,7 @@ double ALILQGames::backward_pass()
             Yd.segment(inu, nu) = (fu.middleCols(inu, nu).transpose() * p[i]) + Lu[i].segment(inu, nu);
 
         }
-        // std::cout << "S \n" << S << "\n";
+
         Eigen::LLT<MatrixXd> lltOfS(S); // compute the Cholesky decomposition of lxx
 
         if (lltOfS.info() == Eigen::NumericalIssue)
@@ -246,80 +246,72 @@ void ALILQGames::solve(SolverParams& params, const VectorXd& x0)
 
     double max_violation = 0.0;
     double current_violation = 0.0;
-    cout << "Initial Rollout timer: " << "\n";
+    cout << "Solver Time " << "\n";
     {
         Timer timer;
         initial_rollout(x0);
-    }
-    iter_ = 0;
+        iter_ = 0;
 
-    // Outer loop is an augmented lagrangian
-    for(size_t outer_iter=0; outer_iter < params.max_iter_al; outer_iter++)
-    {
-
-        // Inner Loop is an ILQGame 
-        for(size_t inner_iter=0; inner_iter < params.max_iter_ilq; inner_iter++)
+        // Outer loop is an augmented lagrangian
+        for(size_t outer_iter=0; outer_iter < params.max_iter_al; outer_iter++)
         {
-            iter_cost = 0.0;
 
-            cout << "Backward Pass timer: " << "\n";
+            // Inner Loop is an ILQGame 
+            for(size_t inner_iter=0; inner_iter < params.max_iter_ilq; inner_iter++)
             {
-                Timer timer;
-                total_cost = backward_pass();
+                iter_cost = 0.0;
 
-            }
+                
+                total_cost = backward_pass(iter_);
 
-            // std::cout << "Backward Cost Now: " << total_cost << "\n";
+                // std::cout << "Backward Cost Now: " << total_cost << "\n";
 
-            // total_cost = 0.0;
+                // total_cost = 0.0;
 
-            // for (size_t i=0; i < n_agents; i++)            // For each agent
-            // {
-            //     total_cost += TotalCost(i);
-            // }
+                // for (size_t i=0; i < n_agents; i++)            // For each agent
+                // {
+                //     total_cost += TotalCost(i);
+                // }
 
-            // std::cout << "Total Cost Now: " << total_cost << "\n";
+                // std::cout << "Total Cost Now: " << total_cost << "\n";
 
-            cout << "Linesearch timer: " << "\n";
-            {
-                Timer timer;
                 BackTrackingLineSearch(x0);
+
+                if ( max_grad < params.grad_tol || alpha == 0.0) // If the infinity norm of gradient term is less than some tolerance, converged
+                {
+                    // std::cout << "Converged!" << "\n"; 
+                    break;
+                }
+
+                iter_ += 1;
             }
 
-            if ( max_grad < params.grad_tol || alpha == 0.0) // If the infinity norm of gradient term is less than some tolerance, converged
+
+            // Get the max violation in constraints to check if we can converge early
+            max_violation = 0.0;
+            current_violation = 0.0;
+
+            for(size_t k=0; k < H-2; k++)                  // TODO: Fix indices for H-1 instead of H-2
             {
-                // std::cout << "Converged!" << "\n"; 
+                current_violation = al -> MaxConstraintViolation(x_k[k], u_k[k]);
+                if (current_violation > max_violation)
+                {
+                    max_violation = current_violation;
+                }
+            }
+
+            // If the max violation is within some tolerance, we converged
+            if ( max_violation < params.max_constraint_violation)                  
+            {
+                cout << "Converged!" << "\n"; 
                 break;
             }
 
-            iter_ += 1;
+            al -> DualUpdate(x_k, u_k);
+
+            al -> PenaltySchedule();
+
         }
-
-
-        // Get the max violation in constraints to check if we can converge early
-        max_violation = 0.0;
-        current_violation = 0.0;
-
-        for(size_t k=0; k < H-2; k++)                  // TODO: Fix indices for H-1 instead of H-2
-        {
-            current_violation = al -> MaxConstraintViolation(x_k[k], u_k[k]);
-            if (current_violation > max_violation)
-            {
-                max_violation = current_violation;
-            }
-        }
-
-        // If the max violation is within some tolerance, we converged
-        if ( max_violation < params.max_constraint_violation)                  
-        {
-            cout << "Converged!" << "\n"; 
-            break;
-        }
-
-        al -> DualUpdate(x_k, u_k);
-
-        al -> PenaltySchedule();
-
     }
 
     cout << "Solution x[end]: " << x_k[H-1] << "\n";
@@ -353,32 +345,33 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
     const int N = params.H_all;                         // Entire horizon length
     const int Nhor = params.H;                         // MPC horizon
 
-    // for (int k=0; k < N - Nhor; k++)
-    // {
-    //     solve(params, X_k[k]);
-    //     X_k[k+1] = x_k[1];
-    //     U_k[k] = u_k[0];
-    // }
-
-    for (size_t k=0; k < N; k++)
+    for (int k=0; k < N - Nhor; k++)
     {
         solve(params, X_k[k]);
         X_k[k+1] = x_k[1];
         U_k[k] = u_k[0];
 
-        if (k%10)
+        if (k % params.reset_schedule)
         {
             al->ResetDual();
             al->ResetPenalty();
         }
     }
 
-    // for (int k = N - Nhor; k < N; k++)
-    // {
-    //     solve(params, X_k[k]);
-    //     X_k[k+1] = x_k[1];
-    //     U_k[k] = u_k[0];
-    // }
+    for (int k = N - Nhor; k < N-1; k++)
+    {
+        solve(params, X_k[k]);
+        X_k[k+1] = x_k[1];
+        U_k[k] = u_k[0];
+
+        H -= 1;
+
+        if (k % params.reset_schedule)
+        {
+            al->ResetDual();
+            al->ResetPenalty();
+        }
+    }
 }
 
 
@@ -401,14 +394,6 @@ VectorXd ALILQGames::getState(const int k)
     else
     return x_k[k];
 
-    // if (isMPC)
-    // {
-    //     return X_k[k];
-    // }
-    // else 
-    // {
-    //     return x_k[k];
-    // }
 }
 
 VectorXd ALILQGames::getControl(const int k)

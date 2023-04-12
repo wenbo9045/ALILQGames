@@ -27,7 +27,7 @@ struct Solver
 
     virtual double forward_rollout(const VectorXd& x0) = 0;
 
-    virtual double backward_pass() = 0;
+    virtual double backward_pass(const int k) = 0;
 
     virtual void BackTrackingLineSearch(const VectorXd& x0) {}
 

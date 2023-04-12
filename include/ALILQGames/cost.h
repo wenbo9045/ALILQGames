@@ -18,7 +18,10 @@ struct Cost
 
     virtual double StageCost(const int i, const VectorXd& x, const VectorXd& u) = 0;                          // cost function
 
-    virtual double TerminalCost(const int i, const VectorXd& x) = 0;                                          // cost function
+    virtual double TerminalCost(const int i, const VectorXd& x) = 0;
+
+    // virtual double TerminalCost(const int k, const int i, const VectorXd& x) = 0;                                          // cost function
+                                            
 
     virtual double TotalCost(const int i, const int H, const std::vector<VectorXd>& x, const std::vector<VectorXd>& u) = 0;                        // cost function
 
@@ -29,5 +32,7 @@ struct Cost
     virtual void StageCostHessian(const int i, MatrixXd& lxx, MatrixXd& luu, const VectorXd& x, const VectorXd& u) = 0;
 
     virtual void TerminalCostHessian(const int i, MatrixXd& lxx, const VectorXd& x) = 0;
+
+    virtual void NAgentGoalChange(int k) {};
 
 };

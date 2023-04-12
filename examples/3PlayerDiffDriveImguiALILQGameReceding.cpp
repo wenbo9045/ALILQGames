@@ -40,7 +40,7 @@ int main(){
 
     SolverParams params;                                // load param stuct (holds "most" solver paramters)
     params.H_all = 300;                                 // horizon length
-    params.H = 150;                                     // MPC horizon length
+    params.H = 200;                                     // MPC horizon length
     params.MPC = true;                                  // Solve in RH fashion
     params.dt = 0.1;                                    // discretization time
     params.nx = nx;                                     // single agent number of states
@@ -86,7 +86,7 @@ int main(){
     // Q1(3,3) = 1.0;
 
     MatrixXd QN1 = MatrixXd::Zero(Nx, Nx);
-    QN1.block(0, 0, nx, nx) = 30.0*MatrixXd::Identity(nx, nx);
+    QN1.block(0, 0, nx, nx) = 20.0*MatrixXd::Identity(nx, nx);
     
     MatrixXd R1 = MatrixXd::Zero(Nu, Nu);
     R1.block(0, 0, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
@@ -99,7 +99,7 @@ int main(){
     // Q2(7,7) = 1.0;
 
     MatrixXd QN2 = MatrixXd::Zero(Nx, Nx);
-    QN2.block(1*nx, 1*nx, nx, nx) = 30.0*MatrixXd::Identity(nx, nx);
+    QN2.block(1*nx, 1*nx, nx, nx) = 20.0*MatrixXd::Identity(nx, nx);
     
     MatrixXd R2 = MatrixXd::Zero(Nu, Nu);
     R2.block(1*nu, 1*nu, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
@@ -112,7 +112,7 @@ int main(){
     // Q3(11,11) = 1.0;
 
     MatrixXd QN3 = MatrixXd::Zero(Nx, Nx);
-    QN3.block(2*nx, 2*nx, nx, nx) = 30.0*MatrixXd::Identity(nx, nx);
+    QN3.block(2*nx, 2*nx, nx, nx) = 20.0*MatrixXd::Identity(nx, nx);
     
     MatrixXd R3 = MatrixXd::Zero(Nu, Nu);
     R3.block(2*nu, 2*nu, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
@@ -135,6 +135,10 @@ int main(){
         3.0, 5.0, M_PI_2, 0.0,          // Agent 2   
         1.5, 5.0, M_PI_2, 0.0;          // Agent 3
 
+    OracleParams oracleparams;
+    oracleparams.GoalisChanging = false;
+    oracleparams.x0goal = xgoal;
+
     // construct a Differential drive model 
     Model* ptr_model = new DiffDriveModel4D(dt);                                      // heap allocation
 
@@ -145,11 +149,11 @@ int main(){
     vector<shared_ptr<Cost>> ptr_cost;
 
     // Player 1 quadratic cost
-    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(Q1, QN1, R1, xgoal)) );        
+    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(oracleparams, Q1, QN1, R1)) );        
     // Player 2 quadratic cost
-    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(Q2, QN2, R2, xgoal)) );
+    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(oracleparams, Q2, QN2, R2)) );
     // Player 3 quadratic cost
-    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(Q3, QN3, R3, xgoal)) );
+    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(oracleparams, Q3, QN3, R3)) );
     // ptr_cost.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q1, QN1, R1, xgoal, r_avoid)) );   
     // ptr_cost.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q2, QN2, R2, xgoal, r_avoid)) );
 

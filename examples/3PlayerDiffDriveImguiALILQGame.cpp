@@ -134,6 +134,10 @@ int main(){
         3.0, 5.0, M_PI_2, 0.0,          // Agent 2   
         1.5, 5.0, M_PI_2, 0.0;          // Agent 3
 
+    OracleParams oracleparams;
+    oracleparams.GoalisChanging = false;
+    oracleparams.x0goal = xgoal;
+
     // construct a Differential drive model 
     Model* ptr_model = new DiffDriveModel4D(dt);                                      // heap allocation
 
@@ -144,11 +148,11 @@ int main(){
     vector<shared_ptr<Cost>> ptr_cost;
 
     // Player 1 quadratic cost
-    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(Q1, QN1, R1, xgoal)) );        
+    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(oracleparams, Q1, QN1, R1)) );        
     // Player 2 quadratic cost
-    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(Q2, QN2, R2, xgoal)) );
+    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(oracleparams, Q2, QN2, R2)) );
     // Player 3 quadratic cost
-    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(Q3, QN3, R3, xgoal)) );
+    ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(oracleparams, Q3, QN3, R3)) );
     // ptr_cost.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q1, QN1, R1, xgoal, r_avoid)) );   
     // ptr_cost.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q2, QN2, R2, xgoal, r_avoid)) );
 

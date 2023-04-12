@@ -131,7 +131,7 @@ class ALILQGames : public Solver
 
         double forward_rollout(const VectorXd& x0) override;
 
-        double backward_pass() override;
+        double backward_pass(const int k) override;
 
         void BackTrackingLineSearch(const VectorXd& x0) override;
 

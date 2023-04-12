@@ -16,9 +16,9 @@ project(${CMAKE_PROJECT_NAME})               # Name of project
 
 # add_executable(DiffDrive_imgui DiffDrive_imgui.cpp)
 
-add_executable(DiffDrive_imgui_ILQGame DiffDrive_imgui_ILQGame.cpp)
+# add_executable(DiffDrive_imgui_ILQGame DiffDrive_imgui_ILQGame.cpp)
 
-add_executable(DiffDrive_imgui_ALILQGame DiffDrive_imgui_ALILQGame.cpp)
+# add_executable(DiffDrive_imgui_ALILQGame DiffDrive_imgui_ALILQGame.cpp)
 
 add_executable(3PlayerDiffDriveImguiALILQGame 3PlayerDiffDriveImguiALILQGame.cpp)
 
@@ -52,19 +52,19 @@ add_executable(3PlayerDiffDriveImguiALILQGameReceding 3PlayerDiffDriveImguiALILQ
 #     glad
 #     ALILQGames)
 
-target_link_libraries(DiffDrive_imgui_ILQGame
-    PRIVATE                             # private dependency of the main executable (exectubales are usually private)
-    imgui 
-    glfw 
-    glad
-    ALILQGames)
+# target_link_libraries(DiffDrive_imgui_ILQGame
+#     PRIVATE                             # private dependency of the main executable (exectubales are usually private)
+#     imgui 
+#     glfw 
+#     glad
+#     ALILQGames)
 
-target_link_libraries(DiffDrive_imgui_ALILQGame
-    PRIVATE                             # private dependency of the main executable (exectubales are usually private)
-    imgui 
-    glfw 
-    glad
-    ALILQGames)
+# target_link_libraries(DiffDrive_imgui_ALILQGame
+#     PRIVATE                             # private dependency of the main executable (exectubales are usually private)
+#     imgui 
+#     glfw 
+#     glad
+#     ALILQGames)
 
 target_link_libraries(3PlayerDiffDriveImguiALILQGame
     PRIVATE                             # private dependency of the main executable (exectubales are usually private)
