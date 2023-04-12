@@ -34,4 +34,6 @@ struct SolverParams
     double penalty = 10.0;              // penalty value for augmented lagrangian
     double penalty_scale = 1.5;         // penalty schedule for augmented lagrangian
     int reset_schedule = 20.0;          // resetting dual variable every number of iterations (for MPC)
+
+    bool isGoalChanging = false;
 };

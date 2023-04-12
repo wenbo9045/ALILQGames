@@ -112,27 +112,34 @@ public:
                              trajectory_thickness);
 
 			// Note this is only for point mass
-			float x = solver->getState(k_step)[i*nx];
-			float y = solver->getState(k_step)[i*nx + 1];
+			const float x = solver->getState(k_step)[i*nx];
+			const float y = solver->getState(k_step)[i*nx + 1];
+
+			const float xgoal = solver->getGoalState(i, k_step)[i*nx];
+			const float ygoal = solver->getGoalState(i, k_step)[i*nx + 1];
 			// float xdot = solver->getState(k_step)[i*nx + 2];
 			// float ydot = solver->getState(k_step)[i*nx + 3];
 			// float theta = atan2(xdot, ydot);
 
 			// for differential drive robot
-			float theta = solver->getState(k_step)[i*nx + 2];
+			const float theta = solver->getState(k_step)[i*nx + 2];
 
 
 			const ImVec2 robotPosition = PositionToWindowCoordinates(x,y);
+
+			const ImVec2 goalPosition = PositionToWindowCoordinates(xgoal,ygoal);
         	
 			if (i == selected_player_)
 			{
 				// rgba(78, 233, 39, 0.8)
 				draw_list->AddCircle(robotPosition, agent_radius, IM_COL32(78, 233, 40, 255));
+				draw_list->AddCircle(goalPosition, agent_radius, IM_COL32(78, 100, 40, 255));
 			}
 
 			else
 			{
 				draw_list->AddCircle(robotPosition, agent_radius, IM_COL32(255, 255, 0, 255));
+				draw_list->AddCircle(goalPosition, agent_radius, IM_COL32(255, 255, 0, 255));
 			}
 
 			// for pointmass 

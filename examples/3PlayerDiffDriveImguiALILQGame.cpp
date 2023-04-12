@@ -49,7 +49,7 @@ int main(){
     params.rho_obs = 500.0;                             // penalty parameter for collision cost 
     
     // AL Params
-    params.penalty_scale = 1.2;
+    params.penalty_scale = 10.0;
 
     // number of inequality constraints = state and input constraints + number of collisions constraints btn agents
     params.p_inq = 2*(Nx + Nu) + n_ag*(n_ag - 1);   
@@ -61,13 +61,13 @@ int main(){
     // lower & upper state limits
     VectorXd xmin = -100.0*VectorXd::Ones(nx*n_ag);
     VectorXd xmax =  100.0*VectorXd::Ones(nx*n_ag);
-    xmin(3) = -0.3;                                     // min Velocity constraint for agent 1
-    xmin(7) = -0.3;                                     // min Velocity constraint for agent 2
-    xmin(11) = -0.3;                                    // min Velocity constraint for agent 3
+    xmin(3) = -0.5;                                     // min Velocity constraint for agent 1
+    xmin(7) = -0.5;                                     // min Velocity constraint for agent 2
+    xmin(11) = -0.5;                                    // min Velocity constraint for agent 3
 
-    xmax(3) =  0.3;                                     // max Velocity constraint for agent 1
-    xmax(7) =  0.3;                                     // max Velocity constraint for agent 2
-    xmax(11) = 0.3;                                     // max Velocity constraint for agent 3
+    xmax(3) =  0.5;                                     // max Velocity constraint for agent 1
+    xmax(7) =  0.5;                                     // max Velocity constraint for agent 2
+    xmax(11) = 0.5;                                     // max Velocity constraint for agent 3
 
 
     // collision avoidance radius for each agent: [r1: 2.0, r2: 2.0], where 1 and 2 are the agents

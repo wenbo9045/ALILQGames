@@ -24,6 +24,7 @@ class ALILQGames : public Solver
             H = params.H;
 
             isMPC = params.MPC;
+            isGoalChanging = params.isGoalChanging;
 
             if (isMPC)                         // If we are solving with MPC
             {
@@ -131,7 +132,7 @@ class ALILQGames : public Solver
 
         double forward_rollout(const VectorXd& x0) override;
 
-        double backward_pass(const int k) override;
+        double backward_pass(const int k_now) override;
 
         void BackTrackingLineSearch(const VectorXd& x0) override;
 
@@ -155,17 +156,19 @@ class ALILQGames : public Solver
 
         double getTerminalCost(const int i) override;
 
+        VectorXd getGoalState(const int i, const int k) override;
+
         double dt;                                   // delta t
 
         int H;                                      // Horizon length
 
-        int iter_;
+        int iter_, k_now;
 
         double iter_cost, total_cost;
 
     private:
 
-        bool isMPC;
+        bool isMPC, isGoalChanging;
 
         vector<VectorXd> X_k;                  // States over the entire Horizon 
 

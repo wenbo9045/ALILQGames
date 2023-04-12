@@ -6,7 +6,7 @@
 class DiffDriveCost : public Cost {
     
     public:
-        // (i.e. for player i = 1): Rij = [R11 R12 R13 ... R1N] nu x nplayers*nu or diagm(Rij)
+        // (i.e. for player i = 1): Rij = [R11 R12 R13 ... R1N] Nu x nplayers*Nu or diagm(Rij)
         DiffDriveCost(OracleParams& oracleparams, MatrixXd Qi, MatrixXd QNi, MatrixXd Rij)
         {
         
@@ -23,10 +23,12 @@ class DiffDriveCost : public Cost {
                 const float dy = GoalOrigin(1) - x0goal(1);
                 Radius = std::sqrt(dx*dx + dy*dy);
 
+                nx = xfgoal.rows()/oracleparams.n_agents;
+
                 phi.resize(oracleparams.n_agents);
             }
-            nx = Q.rows();
-            nu = R.rows();
+            Nx = Q.rows();
+            Nu = R.rows();
         }
 
         double TotalCost(const int i, const int H, const std::vector<VectorXd>& x, const std::vector<VectorXd>& u) override{
@@ -52,9 +54,9 @@ class DiffDriveCost : public Cost {
         }
 
         void StageCostGradient(const int i, VectorXd &lx, VectorXd &lu, const VectorXd& x, const VectorXd& u) override{
-            assert(lx.rows() == nx);
+            assert(lx.rows() == Nx);
             assert(lx.cols() == 1);
-            assert(lu.rows() == nu);
+            assert(lu.rows() == Nu);
             assert(lu.cols() == 1); 
 
             lx = Q*(x - xgoal);
@@ -62,16 +64,16 @@ class DiffDriveCost : public Cost {
         }
 
         void TerminalCostGradient(const int i, VectorXd &lx, const VectorXd& x) override{
-            assert(lx.rows() == nx);
+            assert(lx.rows() == Nx);
 
             lx = QN*(x -xgoal);
         }
 
         void StageCostHessian(const int i, MatrixXd &lxx, MatrixXd &luu, const VectorXd& x, const VectorXd& u) override {
-            assert(lxx.rows() == nx);
-            assert(lxx.cols() == nx);
-            assert(luu.rows() == nu);
-            assert(luu.cols() == nu);
+            assert(lxx.rows() == Nx);
+            assert(lxx.cols() == Nx);
+            assert(luu.rows() == Nu);
+            assert(luu.cols() == Nu);
 
             lxx = Q;
             luu = R;         
@@ -79,16 +81,16 @@ class DiffDriveCost : public Cost {
         }
 
         void TerminalCostHessian(const int i, MatrixXd &lxx, const VectorXd& x) override {
-            assert(lxx.rows() == nx);
+            assert(lxx.rows() == Nx);
             lxx = QN;
         }
 
-        void NAgentGoalChange(int k) override
+        VectorXd NAgentGoalChange(int k) override
         {
-            const float kf = 500.0;                         // where the final goal will be at time tf
+            const float kf = 450.0;                         // where the final goal will be at time tf
 
-            if (k > 300.0)
-                k = 300.0;  
+            if (k > 450.0)
+                k = 450.0;  
             
             // x1(t) = Rcos(omega1*t + phi1)
             // y1(t) = Rsin(omega1*t + phi2)
@@ -96,13 +98,21 @@ class DiffDriveCost : public Cost {
         
             for (std::size_t i = 0; i < phi.size(); i++)
             {
-                phi[i] = acos((x0goal(i*nx) - GoalOrigin(1))/Radius);
-                const double omega = (acos((xfgoal(i*nx) - GoalOrigin(0))/Radius) - phi[i])/kf;
+                const int inx = i*nx;
+
+                // std::cout << GoalOrigin << "\n";
+
+                phi[i] = acos((x0goal(inx) - GoalOrigin(0))/Radius);
+                const double omega = (acos((xfgoal(0) - GoalOrigin(0))/Radius) - phi[i])/kf;
+
                 // X coordinate of goal
-                xgoal(i*nx) = Radius*cos(omega*k + phi[i]) + GoalOrigin(0);
+                xgoal(inx) = Radius*cos(omega*k + phi[i]) + GoalOrigin(0);
                 // Y coordinate of goal
-                xgoal(1+ i*nx) = Radius*sin(omega*k + phi[i]) + GoalOrigin(1); 
+                xgoal(1+ inx) = Radius*sin(omega*k + phi[i]) + GoalOrigin(1); 
+
             }
+
+            return xgoal;
 
         }
 
@@ -122,7 +132,9 @@ class DiffDriveCost : public Cost {
         VectorXd GoalOrigin;
         double Radius;     
         
+        int Nx;
+        int Nu;
+
         int nx;
-        int nu;
 
 }; 

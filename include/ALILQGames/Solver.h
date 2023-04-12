@@ -27,7 +27,7 @@ struct Solver
 
     virtual double forward_rollout(const VectorXd& x0) = 0;
 
-    virtual double backward_pass(const int k) = 0;
+    virtual double backward_pass(const int k_now) = 0;
 
     virtual void BackTrackingLineSearch(const VectorXd& x0) {}
 
@@ -46,5 +46,12 @@ struct Solver
     virtual double getStageCost(const int i, const int k) = 0;
 
     virtual double getTerminalCost(const int i) = 0;
+
+    // Fix this cheap hack to remove warnings
+    virtual VectorXd getGoalState(const int i, const int k) 
+    {
+        VectorXd xtemp = VectorXd::Zero(8);
+        return xtemp;
+    };
 
 };

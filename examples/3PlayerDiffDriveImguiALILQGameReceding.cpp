@@ -39,7 +39,7 @@ int main(){
     double dt = 0.1;               
 
     SolverParams params;                                // load param stuct (holds "most" solver paramters)
-    params.H_all = 300;                                 // horizon length
+    params.H_all = 500;                                 // horizon length
     params.H = 200;                                     // MPC horizon length
     params.MPC = true;                                  // Solve in RH fashion
     params.dt = 0.1;                                    // discretization time
@@ -87,9 +87,11 @@ int main(){
 
     MatrixXd QN1 = MatrixXd::Zero(Nx, Nx);
     QN1.block(0, 0, nx, nx) = 20.0*MatrixXd::Identity(nx, nx);
+    QN1(2,2) = 0.0;
+
     
     MatrixXd R1 = MatrixXd::Zero(Nu, Nu);
-    R1.block(0, 0, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
+    R1.block(0, 0, nu, nu) = 5.0*MatrixXd::Identity(nu, nu);
 
     // Player 2 Quadratic costs
 
@@ -100,9 +102,11 @@ int main(){
 
     MatrixXd QN2 = MatrixXd::Zero(Nx, Nx);
     QN2.block(1*nx, 1*nx, nx, nx) = 20.0*MatrixXd::Identity(nx, nx);
+    QN2(6,6) = 0.0;
+
     
     MatrixXd R2 = MatrixXd::Zero(Nu, Nu);
-    R2.block(1*nu, 1*nu, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
+    R2.block(1*nu, 1*nu, nu, nu) = 5.0*MatrixXd::Identity(nu, nu);
 
     // Player 3 Quadratic costs
 
@@ -113,31 +117,58 @@ int main(){
 
     MatrixXd QN3 = MatrixXd::Zero(Nx, Nx);
     QN3.block(2*nx, 2*nx, nx, nx) = 20.0*MatrixXd::Identity(nx, nx);
+    QN3(10,10) = 0.0;
+
     
     MatrixXd R3 = MatrixXd::Zero(Nu, Nu);
-    R3.block(2*nu, 2*nu, nu, nu) = 2.0*MatrixXd::Identity(nu, nu);
+    R3.block(2*nu, 2*nu, nu, nu) = 5.0*MatrixXd::Identity(nu, nu);
 
 
     // Players' initial state
     VectorXd x0(Nx);
 
+    // x0 << 
+    //     1.5, 0.0, M_PI_2, 0.0,        // Agent 1
+    //     3.0, 0.0, M_PI_2, 0.0,        // Agent 2
+    //     4.5, 0.0, M_PI_2, 0.0;        // Agent 3
     x0 << 
-        1.5, 0.0, M_PI_2, 0.0,        // Agent 1
+        1.5, 0.5, M_PI_2, 0.0,        // Agent 1
         3.0, 0.0, M_PI_2, 0.0,        // Agent 2
-        4.5, 0.0, M_PI_2, 0.0;        // Agent 3
-
+        4.5, 0.5, M_PI_2, 0.0;        // Agent 3
+    
     params.x0 = x0;
     
     // Players' goal state
     VectorXd xgoal(Nx);
+    // xgoal <<
+    //     4.5, 5.0, M_PI_2, 0.0,          // Agent 1
+    //     3.0, 5.0, M_PI_2, 0.0,          // Agent 2   
+    //     1.5, 5.0, M_PI_2, 0.0;          // Agent 3
+    
     xgoal <<
-        4.5, 5.0, M_PI_2, 0.0,          // Agent 1
+        1.5, 4.5, M_PI_2, 0.0,          // Agent 3
         3.0, 5.0, M_PI_2, 0.0,          // Agent 2   
-        1.5, 5.0, M_PI_2, 0.0;          // Agent 3
+        4.5, 4.5, M_PI_2, 0.0;
+
+    VectorXd xfgoal(Nx);
+
+    xfgoal << 
+        5.0, 4.0, M_PI_2, 0.0,
+        5.5, 2.5, M_PI_2, 0.0,
+        5.0, 1.0, M_PI_2, 0.0;
+
+
+    VectorXd RotGoalOrigin(2);
+
+    RotGoalOrigin << 3.0, 2.5;
 
     OracleParams oracleparams;
-    oracleparams.GoalisChanging = false;
+    oracleparams.GoalisChanging = true;
+    params.isGoalChanging = true;
     oracleparams.x0goal = xgoal;
+    oracleparams.xfgoal = xgoal;
+    oracleparams.n_agents = n_ag;
+    oracleparams.RotGoalOrigin = RotGoalOrigin;
 
     // construct a Differential drive model 
     Model* ptr_model = new DiffDriveModel4D(dt);                                      // heap allocation

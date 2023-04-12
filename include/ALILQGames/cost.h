@@ -33,6 +33,11 @@ struct Cost
 
     virtual void TerminalCostHessian(const int i, MatrixXd& lxx, const VectorXd& x) = 0;
 
-    virtual void NAgentGoalChange(int k) {};
+    // Fix this cheap hack to suppress warnings
+    virtual VectorXd NAgentGoalChange(int k) 
+    {
+        VectorXd xtemp = VectorXd::Zero(8);
+        return xtemp;
+    };
 
 };

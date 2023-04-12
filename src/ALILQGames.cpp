@@ -13,15 +13,7 @@ double ALILQGames::initial_rollout(const VectorXd& x0)
         //u_t[k] = - K_t[k]*x_t[k] - k_t[k];                  // This is not neccasry (just an initial random rollout)
         x_k[k+1] = Nmodel->RK4(x_k[k], u_k[k] , Nmodel->dt);         // rollout nonlinear dynmaics with policy
 
-        // for (size_t i=0; i < n_agents; i++)
-        // {
-        //     total_cost += getStageCost(i, k);
-        // }
     }
-    // for (size_t i=0; i < n_agents; i++)
-    // {
-    //     total_cost += getTerminalCost(i);
-    // }
 
     return total_cost;
 }
@@ -67,7 +59,7 @@ double ALILQGames::forward_rollout(const VectorXd& x0)
     return cost;
 }
 
-double ALILQGames::backward_pass(const int k)
+double ALILQGames::backward_pass(const int k_now)
 {
     double cost = 0.0;
 
@@ -91,6 +83,11 @@ double ALILQGames::backward_pass(const int k)
         for (size_t i=0; i < n_agents; i++)            // For each agent
         {
             const int inu = i*nu;
+
+            if (isGoalChanging)
+            {
+                pc[i] ->NAgentGoalChange(k_now);
+            }
 
             pc[i]->StageCostGradient(i, lx[i], lu[i], x_k[k], u_k[k]);
             pc[i]->StageCostHessian(i, lxx[i], luu[i], x_k[k], u_k[k]);
@@ -144,8 +141,8 @@ double ALILQGames::backward_pass(const int k)
             // Update recursive variables P, p, and delta v
 
             // DeltaV seems to blow up, check for this
-            DeltaV[i] = 0.5 * ((d_k[k].transpose() * Luu[i] - 2 * Lu[i].transpose()) * d_k[k]
-            - ((P[i] * beta_k + 2 * p[i]).transpose() * beta_k).sum()) + DeltaV[i];
+            // DeltaV[i] = 0.5 * ((d_k[k].transpose() * Luu[i] - 2 * Lu[i].transpose()) * d_k[k]
+            // - ((P[i] * beta_k + 2 * p[i]).transpose() * beta_k).sum()) + DeltaV[i];
 
             // std::cout << "V[i] " << DeltaV[i] << "\n";
 
@@ -259,10 +256,8 @@ void ALILQGames::solve(SolverParams& params, const VectorXd& x0)
             // Inner Loop is an ILQGame 
             for(size_t inner_iter=0; inner_iter < params.max_iter_ilq; inner_iter++)
             {
-                iter_cost = 0.0;
 
-                
-                total_cost = backward_pass(iter_);
+                total_cost = backward_pass(k_now);
 
                 // std::cout << "Backward Cost Now: " << total_cost << "\n";
 
@@ -314,7 +309,7 @@ void ALILQGames::solve(SolverParams& params, const VectorXd& x0)
         }
     }
 
-    cout << "Solution x[end]: " << x_k[H-1] << "\n";
+    // cout << "Solution x[end]: " << x_k[H-1] << "\n";
     // cout << "Solution Dual[end]: " << al->GetDual(H-2) << "\n";
     cout << "Maximum violation: " << max_violation << "\n";
 
@@ -344,6 +339,7 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
     X_k[0] = x0;  
     const int N = params.H_all;                         // Entire horizon length
     const int Nhor = params.H;                         // MPC horizon
+    k_now = 0;
 
     for (int k=0; k < N - Nhor; k++)
     {
@@ -351,11 +347,12 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
         X_k[k+1] = x_k[1];
         U_k[k] = u_k[0];
 
-        if (k % params.reset_schedule)
+        if (k % params.reset_schedule || total_cost > 1000000.0)
         {
             al->ResetDual();
             al->ResetPenalty();
         }
+        k_now += 1;
     }
 
     for (int k = N - Nhor; k < N-1; k++)
@@ -366,11 +363,12 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
 
         H -= 1;
 
-        if (k % params.reset_schedule)
+        if (k % params.reset_schedule || total_cost > 1000000.0)
         {
             al->ResetDual();
             al->ResetPenalty();
         }
+        k_now += 1;
     }
 }
 
@@ -414,4 +412,9 @@ double ALILQGames::getStageCost(const int i, const int k)
 double ALILQGames::getTerminalCost(const int i)
 {
     return pc[i]->TerminalCost(i, x_k[H-1]);
+}
+
+VectorXd ALILQGames::getGoalState(const int i, const int k) 
+{
+    return pc[i]->NAgentGoalChange(k);
 }

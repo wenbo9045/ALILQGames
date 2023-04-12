@@ -53,7 +53,7 @@ double ILQGames::forward_rollout(const VectorXd& x0)
     return 0.0;
 }
 
-double ILQGames::backward_pass(const int k)
+double ILQGames::backward_pass(const int k_now)
 {
     // Terminal State cost to go
     for (int i=0; i < n_agents; i++)            // For each agent
