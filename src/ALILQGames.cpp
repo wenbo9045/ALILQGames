@@ -318,6 +318,9 @@ void ALILQGames::solve(SolverParams& params, const VectorXd& x0)
         al->ResetDual();
         al->ResetPenalty();
     }
+
+    std::cout << "K Now: " << k_now << "\n";
+    k_now += 1;
 }
 
 double ALILQGames::TotalCost(const int i)
@@ -339,10 +342,10 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
     X_k[0] = x0;  
     const int N = params.H_all;                         // Entire horizon length
     const int Nhor = params.H;                         // MPC horizon
-    k_now = 0;
 
     for (int k=0; k < N - Nhor; k++)
     {
+        // std::cout << "K :" << k << "\n";
         solve(params, X_k[k]);
         X_k[k+1] = x_k[1];
         U_k[k] = u_k[0];
@@ -352,11 +355,13 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
             al->ResetDual();
             al->ResetPenalty();
         }
-        k_now += 1;
+        // k_now += 1;
     }
 
     for (int k = N - Nhor; k < N-1; k++)
     {
+        // std::cout << "Kend :" << k << "\n";
+
         solve(params, X_k[k]);
         X_k[k+1] = x_k[1];
         U_k[k] = u_k[0];
@@ -368,7 +373,7 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
             al->ResetDual();
             al->ResetPenalty();
         }
-        k_now += 1;
+        // k_now += 1;
     }
 }
 
