@@ -28,6 +28,7 @@ class ALILQGames : public Solver
             dt = params.dt;
             H = params.H;
 
+            k_now = 0;
             isMPC = params.MPC;
             isGoalChanging = params.isGoalChanging;
 
