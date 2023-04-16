@@ -42,6 +42,7 @@ void AL::ActiveConstraint(const int k)
 {
     I_mu.setZero();
     // Check for the active contraints
+    // #pragma omp parallel for num_threads(4)
     for(int ii=0; ii< I_mu.rows(); ii++)
     {
         // if constraint is active or the dual variable associated with it is not 0
@@ -111,6 +112,7 @@ void AL::PenaltySchedule()
 
 void AL::ResetDual()
 {
+    // #pragma omp parallel for num_threads(4)
     for(int k=0; k < lambda.size() - 1; k++)
     {
         lambda[k].setZero();

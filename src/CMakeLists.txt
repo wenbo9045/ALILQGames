@@ -6,7 +6,7 @@ add_library(ALILQGames NPlayerModel.cpp ALILQGames.cpp UseImGui.cpp AL.cpp ILQGa
 
 target_link_libraries (ALILQGames Eigen3::Eigen imgui glfw glad)
 
-target_compile_options (ALILQGames PRIVATE -Ofast -O3)
+# target_compile_options (ALILQGames PUBLIC -O3 -fopenmp) #-Ofast #-fopenmp #-O3 #-march=native
 
 # Where to find the header files
 message(CMAKE_CURRENT_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")

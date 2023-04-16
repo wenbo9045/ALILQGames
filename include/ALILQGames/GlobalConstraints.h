@@ -1,4 +1,6 @@
 #pragma once
+// #define EIGEN_DONT_PARALLELIZE
+
 #include <Eigen/Dense>
 #include <cassert>  
 

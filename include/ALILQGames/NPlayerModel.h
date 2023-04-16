@@ -55,12 +55,6 @@ class NPlayerModel
         int Nu;                       // Total Number of control inputs
         double dt;
 
-        // ~Model() {}
-
-        // virtual VectorXd dynamics_concat(const VectorXd &x, const VectorXd &u) = 0;          // dynamics function, arguments are constant references of the state and control
-        // // = 0, It's a pure virtual function. It makes it so you MUST derive a class (and implement said function) in order to use it.
-
-        // virtual void dynamicsJacobConcat(MatrixXd &fx, MatrixXd &fu, const VectorXd& x, const VectorXd& u) = 0;
 
         VectorXd dynamics_concat(const VectorXd& x, const VectorXd& u);    
 

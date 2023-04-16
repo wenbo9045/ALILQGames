@@ -1,12 +1,17 @@
 #pragma once
+// #define EIGEN_DONT_PARALLELIZE
+
 #include "NPlayerModel.h"
 #include <iostream>
+#include <algorithm>
+#include <omp.h>
 #include <vector>
 #include <memory>
 #include "cost.h"
 #include "SolverParams.h"
 #include "AL.h"
 #include "Solver.h"
+
 
 using namespace std;
 

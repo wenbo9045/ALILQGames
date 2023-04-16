@@ -1,7 +1,5 @@
 #include "ALILQGames/ALILQGames.h"
 #include "ALILQGames/Timer.h"
-#include <algorithm>
-#include <execution>
 
 double ALILQGames::initial_rollout(const VectorXd& x0)
 {
@@ -38,6 +36,7 @@ double ALILQGames::forward_rollout(const VectorXd& x0)
         // std::cout << "x_t " << x_t[k] << "\n";
         x_k[k+1] = Nmodel->RK4(x_k[k], u_k[k] , Nmodel->dt);                      // rollout nonlinear dynmaics with policy
 
+        // #pragma omp parallel for
         for (size_t i=0; i < n_agents; i++)
         {
             cost += getStageCost(i, k);
@@ -118,23 +117,23 @@ double ALILQGames::backward_pass(const int k_now)
 
         }
 
-        Eigen::LLT<MatrixXd> lltOfS(S); // compute the Cholesky decomposition of lxx
+        Eigen::LLT<MatrixXd> lltOfS(S); // compute the Cholesky decomposition of S
 
         if (lltOfS.info() == Eigen::NumericalIssue)
         {
             // NotPD = true;
             cout << "S is not PD\n " <<  "\n";
         }
-        
-        // Is this a pseudoinverse?
+
+    
         // Do a least squares like \ in matlab??
-        S = S.inverse();
+        S = S.inverse();//lltOfS.solve(MatrixXd::Identity(Nu,Nu));
         K_k[k] = S*YK; 
         d_k[k] = S*Yd;
 
         F_k = fx - fu * K_k[k];
         beta_k = - fu * d_k[k];                     // n x m x m x 1 = n x 1
-
+        
         for (size_t i=0; i < n_agents; i++)            // For each agent
         {
 
@@ -163,6 +162,7 @@ double ALILQGames::backward_pass(const int k_now)
 
 void ALILQGames::BackTrackingLineSearch(const VectorXd& x0)
 {
+
     x_hat = x_k;                                                 // previous states
     u_hat = u_k;  
     double alphas[9] = {1.0, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625, 0.0078125, 0.0};
@@ -240,6 +240,7 @@ void ALILQGames::ArmuijoLineSearch(const VectorXd& x0)
 
 void ALILQGames::solve(SolverParams& params, const VectorXd& x0)
 {
+    // omp_set_num_threads(16);
 
     double max_violation = 0.0;
     double current_violation = 0.0;

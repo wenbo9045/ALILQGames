@@ -15,11 +15,13 @@ class DiffDriveModel4D : public Model {
             nx = 4;
             nu = 2;
             dt = dtin;
+            xdot = VectorXd::Zero(nx);
+
         }
     
         VectorXd dynamics(const VectorXd &x, const VectorXd &u) override {
-            VectorXd xdot(nx);
-
+            
+            // VectorXd xdot(nx);
             xdot(0) = x(3)*std::cos(x(2));
             xdot(1) = x(3)*std::sin(x(2));
             xdot(2) = u(1);
@@ -54,5 +56,6 @@ class DiffDriveModel4D : public Model {
             // Discretize Jacobian
             fu = fu*dt;
         }
-
+    private:
+        VectorXd xdot;
 };

@@ -28,13 +28,16 @@
 ## Important
 
 - Add Target change (High-level decision making oracle based on proximity)
-- Forward/Initial Rollout should return total cost (saving multiple for loops)
-  - Total cost should be calculated with parallel forloop
-    - https://stackoverflow.com/questions/36246300/parallel-loops-in-c
+- ~~Forward/Initial Rollout should return total cost (saving multiple for loops)~~
+  - ~~Total cost should be calculated with parallel forloop~~
+    - ~~https://stackoverflow.com/questions/36246300/parallel-loops-in-c~~
 - Check to parallelize for loops
 - Check for memory allocation of functions 
   - https://stackoverflow.com/questions/59913657/strange-values-of-get-rusage-maxrss-on-macos-and-linux
 - Add documentation
+- Place public variabes (if there are) into private
+- Add tests
+- Try Intel compiler
 
 
 ## Not Important

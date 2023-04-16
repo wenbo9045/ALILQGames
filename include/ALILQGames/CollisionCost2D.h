@@ -87,6 +87,7 @@ class CollisionCost2D : public Cost {
             lx = Q * (x - xgoal);
             lu = R * u;
 
+            // #pragma omp parallel for
             for (int j=0; j < n_ag; j++)
             {
                 if (j != i)

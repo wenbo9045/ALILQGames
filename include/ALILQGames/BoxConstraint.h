@@ -51,6 +51,7 @@ class BoxConstraint : public GlobalConstraints {
 
 
             // TODO: Check which is faster
+            // #pragma omp parallel for num_threads(2)
             for(int i=0; i < c.rows(); i++)
             {
                 if (i < nx)
