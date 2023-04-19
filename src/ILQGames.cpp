@@ -315,6 +315,19 @@ VectorXd ILQGames::getControl(const int k)
     return u_k[k];
 }
 
+VectorXd ILQGames::getMPCState(const int k) 
+{
+
+    cout << "Your'e not implementing MPC! Error\n";
+    return x_k[k];
+}
+
+VectorXd ILQGames::getMPCControl(const int k) 
+{
+    cout << "Your'e not implementing MPC! Error\n";
+    return u_k[k];
+}
+
 double ILQGames::getStageCost(const int i, const int k)
 {
 
