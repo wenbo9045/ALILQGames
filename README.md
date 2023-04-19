@@ -28,19 +28,20 @@
 ## Important
 
 - Add Target change (High-level decision making oracle based on proximity)
+  - High-level oracle can also be an optimal solver that assigns goals based on splines (constant velocity)
+- Fix goal changing 
 - ~~Forward/Initial Rollout should return total cost (saving multiple for loops)~~
   - ~~Total cost should be calculated with parallel forloop~~
     - ~~https://stackoverflow.com/questions/36246300/parallel-loops-in-c~~
-- Check to parallelize for loops
-- Check for memory allocation of functions 
-  - https://stackoverflow.com/questions/59913657/strange-values-of-get-rusage-maxrss-on-macos-and-linux
 - Add documentation
-- Place public variabes (if there are) into private
+- Place public variabes (if there are) into private members
 - Add tests
 - Try Intel compiler
 
 
 ## Not Important
+- Check for memory allocation of functions 
+  - https://stackoverflow.com/questions/59913657/strange-values-of-get-rusage-maxrss-on-macos-and-linux
 - Plot trajectories among iterates 
 - Try to start with a symmetric strategy
 - Check for Equilibria
