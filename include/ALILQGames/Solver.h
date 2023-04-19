@@ -39,6 +39,8 @@ struct Solver
 
     virtual void ChangeStrategy(const int i, const float delta) {}
 
+    virtual void MPCWarmStart(SolverParams& params, const VectorXd& x0) {}
+
     virtual VectorXd getState(const int k) = 0;
 
     virtual VectorXd getControl(const int k) = 0;

@@ -260,16 +260,6 @@ void ALILQGames::solve(SolverParams& params, const VectorXd& x0)
 
                 total_cost = backward_pass(k_now);
 
-                // std::cout << "Backward Cost Now: " << total_cost << "\n";
-
-                // total_cost = 0.0;
-
-                // for (size_t i=0; i < n_agents; i++)            // For each agent
-                // {
-                //     total_cost += TotalCost(i);
-                // }
-
-                // std::cout << "Total Cost Now: " << total_cost << "\n";
 
                 BackTrackingLineSearch(x0);
 
@@ -342,7 +332,7 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
 { 
     X_k[0] = x0;  
     const int N = params.H_all;                         // Entire horizon length
-    const int Nhor = params.H;                         // MPC horizon
+    const int Nhor = params.H;                          // MPC horizon
 
     for (int k=0; k < N - Nhor; k++)
     {
@@ -385,6 +375,16 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
             al->ResetPenalty();
         }
         // k_now += 1;
+    }
+}
+
+void ALILQGames::MPCWarmStart(SolverParams& params, const VectorXd& x0) 
+{
+    recedingHorizon(params, x0);        // run MPC
+    H = params.H;                       // reset MPC Horizon
+    for (int k=0; k<H; k++)
+    {
+    u_k[k] = U_k[k];                    // Set warm started strategy for the first MPC Horizon
     }
 }
 

@@ -26,7 +26,7 @@ class ALILQGames : public Solver
         {
             Nmodel.reset(ptr_model);                 // reset shared pointer to the model 
             dt = params.dt;
-            H = params.H;
+            H = params.H;                            // MPC horizon
 
             k_now = 0;
             isMPC = params.MPC;
@@ -147,6 +147,8 @@ class ALILQGames : public Solver
         void solve(SolverParams& params, const VectorXd& x0) override;
 
         void recedingHorizon(SolverParams& params, const VectorXd& x0) override;
+
+        void MPCWarmStart(SolverParams& params, const VectorXd& x0) override;
 
         // Helper functions should probably be universal (in Solver.h)
 
