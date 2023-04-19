@@ -127,28 +127,28 @@ int main(){
     // Players' initial state
     VectorXd x0(Nx);
 
-    // x0 << 
-    //     1.5, 0.0, M_PI_2, 0.0,        // Agent 1
-    //     3.0, 0.0, M_PI_2, 0.0,        // Agent 2
-    //     4.5, 0.0, M_PI_2, 0.0;        // Agent 3
     x0 << 
-        1.5, 0.5, M_PI_2, 0.0,        // Agent 1
+        1.5, 0.0, M_PI_2, 0.0,        // Agent 1
         3.0, 0.0, M_PI_2, 0.0,        // Agent 2
-        4.5, 0.5, M_PI_2, 0.0;        // Agent 3
+        4.5, 0.0, M_PI_2, 0.0;        // Agent 3
+    // x0 << 
+    //     1.5, 0.5, M_PI_2, 0.0,        // Agent 1
+    //     3.0, 0.0, M_PI_2, 0.0,        // Agent 2
+    //     4.5, 0.5, M_PI_2, 0.0;        // Agent 3
     
     params.x0 = x0;
     
     // Players' goal state
     VectorXd xgoal(Nx);
-    // xgoal <<
-    //     4.5, 5.0, M_PI_2, 0.0,          // Agent 1
-    //     3.0, 5.0, M_PI_2, 0.0,          // Agent 2   
-    //     1.5, 5.0, M_PI_2, 0.0;          // Agent 3
-    
     xgoal <<
-        1.5, 4.5, M_PI_2, 0.0,          // Agent 3
+        4.5, 5.0, M_PI_2, 0.0,          // Agent 1
         3.0, 5.0, M_PI_2, 0.0,          // Agent 2   
-        4.5, 4.5, M_PI_2, 0.0;
+        1.5, 5.0, M_PI_2, 0.0;          // Agent 3
+    
+    // xgoal <<
+    //     1.5, 4.5, M_PI_2, 0.0,          // Agent 3
+    //     3.0, 5.0, M_PI_2, 0.0,          // Agent 2   
+    //     4.5, 4.5, M_PI_2, 0.0;
 
     VectorXd xfgoal(Nx);
 
@@ -163,8 +163,8 @@ int main(){
     RotGoalOrigin << 3.0, 2.5;
 
     OracleParams oracleparams;
-    oracleparams.GoalisChanging = true;
-    params.isGoalChanging = true;
+    // oracleparams.GoalisChanging = true;
+    // params.isGoalChanging = true;
     oracleparams.x0goal = xgoal;
     oracleparams.xfgoal = xgoal;
     oracleparams.n_agents = n_ag;

@@ -5,17 +5,24 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 project(ALILQGames VERSION 1.0)               # Name of project
 
 #find_package (Eigen3 3.3 REQUIRED NO_MODULE)
-find_package(OpenMP REQUIRED)
 
-# if (OPENMP_FOUND)
-#     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-#     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-#     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-# endif()
 
 if(NOT CMAKE_BUILD_TYPE)
   # set(CMAKE_BUILD_TYPE Debug)
   set(CMAKE_BUILD_TYPE Release)
+endif()
+
+find_package(OpenMP)
+
+if (OPENMP_FOUND)
+  set(CMAKE_CXX_FLAGS "-fopenmp -march=native -fno-math-errno")
+#     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+#     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+#     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
+
+if (NOT OPENMP_FOUND)
+  set(CMAKE_CXX_FLAGS "-fno-math-errno")
 endif()
 
 # set(CMAKE_CXX_COM)
@@ -27,7 +34,6 @@ endif()
 # endif()
 
 # add_compile_options(-fPIC)
-set(CMAKE_CXX_FLAGS "-fopenmp -march=native -fno-math-errno")
 
 # set(CMAKE_CXX_FLAGS "-fno-math-errno")
 

@@ -4,7 +4,7 @@
 #include "NPlayerModel.h"
 #include <iostream>
 #include <algorithm>
-#include <omp.h>
+// #include <omp.h>
 #include <vector>
 #include <memory>
 #include "cost.h"

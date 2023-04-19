@@ -351,8 +351,14 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
         X_k[k+1] = x_k[1];
         U_k[k] = u_k[0];
 
-        if (k % params.reset_schedule || total_cost > 1000000.0)
+        u_k.erase(u_k.begin());
+        u_k.push_back(u_k.back());
+
+        if (!(k % params.reset_schedule) || (total_cost > 1000000.0))
         {
+            // std::cout << "Reset Penalty\n" << (k % params.reset_schedule) << "\n";
+            // std::cout << "Reset Penalty\n" << total_cost << "\n";
+
             al->ResetDual();
             al->ResetPenalty();
         }
@@ -367,10 +373,14 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
         X_k[k+1] = x_k[1];
         U_k[k] = u_k[0];
 
+        u_k.erase(u_k.begin());                 // delete u_k[0]
+        u_k.push_back(u_k.back());              // add u_k[end]
+
         H -= 1;
 
-        if (k % params.reset_schedule || total_cost > 1000000.0)
+        if (!(k % params.reset_schedule) || (total_cost > 1000000.0))
         {
+            // std::cout << "Reset Penalty\n" << (k % params.reset_schedule) << "\n";
             al->ResetDual();
             al->ResetPenalty();
         }
