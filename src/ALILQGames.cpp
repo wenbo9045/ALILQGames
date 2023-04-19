@@ -403,19 +403,30 @@ void ALILQGames::ChangeStrategy(const int i, const float delta)
 
 VectorXd ALILQGames::getState(const int k)
 {
-    if (isMPC)
-        return X_k[k];
-    else
     return x_k[k];
-
 }
 
 VectorXd ALILQGames::getControl(const int k)
 {
+    return u_k[k];
+}
+
+VectorXd ALILQGames::getMPCState(const int k) 
+{
+    if (isMPC)
+        return X_k[k];
+    else
+        cout << "Your'e not implementing MPC! Error\n";
+        return x_k[k];
+}
+
+VectorXd ALILQGames::getMPCControl(const int k) 
+{
     if (isMPC)
         return U_k[k];
     else
-    return u_k[k];
+        cout << "Your'e not implementing MPC! Error\n";
+        return u_k[k];
 }
 
 // Change this to augmented lagrangian cost

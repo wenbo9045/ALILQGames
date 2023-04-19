@@ -102,7 +102,7 @@ public:
 			for (int k=0; k<k_step; k++)
 			{
 				points[k] =
-				PositionToWindowCoordinates(solver->getState(k)[i*nx], solver->getState(k)[i*nx + 1]);
+				PositionToWindowCoordinates(solver->getMPCState(k)[i*nx], solver->getMPCState(k)[i*nx + 1]);
 
 
 			}
@@ -112,8 +112,8 @@ public:
                              trajectory_thickness);
 
 			// Note this is only for point mass
-			const float x = solver->getState(k_step)[i*nx];
-			const float y = solver->getState(k_step)[i*nx + 1];
+			const float x = solver->getMPCState(k_step)[i*nx];
+			const float y = solver->getMPCState(k_step)[i*nx + 1];
 
 			const float xgoal = solver->getGoalState(i, k_step)[i*nx];
 			const float ygoal = solver->getGoalState(i, k_step)[i*nx + 1];
@@ -122,7 +122,7 @@ public:
 			// float theta = atan2(xdot, ydot);
 
 			// for differential drive robot
-			const float theta = solver->getState(k_step)[i*nx + 2];
+			const float theta = solver->getMPCState(k_step)[i*nx + 2];
 
 
 			const ImVec2 robotPosition = PositionToWindowCoordinates(x,y);
@@ -182,14 +182,14 @@ public:
 			for (int k=0; k<k_step; k++)
 			{
 				// X position of player i
-				const float xi = solver->getState(k)[selected_player_*nx];	
+				const float xi = solver->getMPCState(k)[selected_player_*nx];	
 				// Y position of player i
-				const float yi = solver->getState(k)[selected_player_*nx + 1];
+				const float yi = solver->getMPCState(k)[selected_player_*nx + 1];
 				// Velocity position of player i
-				const float vi = solver->getState(k)[selected_player_*nx + 3];
+				const float vi = solver->getMPCState(k)[selected_player_*nx + 3];
 
 				// First control input of player i (in turtlebot case, it is just acceleration)
-				const float ui = solver->getControl(k)[selected_player_*nu];
+				const float ui = solver->getMPCControl(k)[selected_player_*nu];
 
 				posX[k] = xi;
 				posY[k] = yi;

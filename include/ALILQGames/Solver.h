@@ -45,6 +45,10 @@ struct Solver
 
     virtual VectorXd getControl(const int k) = 0;
 
+    virtual VectorXd getMPCState(const int k) = 0;
+
+    virtual VectorXd getMPCControl(const int k) = 0;
+
     virtual double getStageCost(const int i, const int k) = 0;
 
     virtual double getTerminalCost(const int i) = 0;

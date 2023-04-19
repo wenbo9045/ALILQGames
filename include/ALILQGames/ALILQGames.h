@@ -160,6 +160,10 @@ class ALILQGames : public Solver
 
         VectorXd getControl(const int k) override;
 
+        VectorXd getMPCState(const int k) override;
+
+        VectorXd getMPCControl(const int k) override;
+
         double getStageCost(const int i, const int k) override;
 
         double getTerminalCost(const int i) override;
