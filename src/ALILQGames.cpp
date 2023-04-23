@@ -65,6 +65,7 @@ double ALILQGames::backward_pass(const int k_now)
     // Terminal State cost to go
     for (size_t i=0; i < n_agents; i++)            // For each agent
     {
+
         pc[i]->TerminalCostGradient(i, lx[i], x_k[H-1]);
         pc[i]->TerminalCostHessian(i, lxx[i], x_k[H-1]);
 
@@ -83,15 +84,13 @@ double ALILQGames::backward_pass(const int k_now)
         {
             const int inu = i*nu;
 
-            if (isGoalChanging)
-            {
-                pc[i] ->NAgentGoalChange(k_now);
-            }
 
             pc[i]->StageCostGradient(i, lx[i], lu[i], x_k[k], u_k[k]);
             pc[i]->StageCostHessian(i, lxx[i], luu[i], x_k[k], u_k[k]);
 
-            al->ALGradHess(k, Lxx[i], Luu[i], Lux[i], Lx[i], Lu[i], lxx[i], luu[i], lux[i], lx[i], lu[i], x_k[k], u_k[k]); 
+            al->ALGradHess(k, Lxx[i], Luu[i], Lux[i], Lx[i], Lu[i], 
+                              lxx[i], luu[i], lux[i], lx[i], lu[i], 
+                                                    x_k[k], u_k[k]); 
 
             // S = [(R¹¹ + B¹ᵀ P¹ B¹)     (B¹ᵀ P¹ B²)     ⋅⋅⋅      (B¹ᵀ P¹ Bᴺ)   ;
             //         (B²ᵀ P² B¹)     (R²² + B²ᵀ P² B²)  ⋅⋅⋅      (B²ᵀ P² Bᴺ)   ;
@@ -337,6 +336,11 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
     for (int k=0; k < N - Nhor; k++)
     {
         // std::cout << "K :" << k << "\n";
+
+        // std::for_each(pc.begin(), pc.end(), [&k](shared_ptr<Cost>& agent_i) { 
+        //     agent_i->NAgentGoalChange(k); });
+        
+
         solve(params, X_k[k]);
         X_k[k+1] = x_k[1];
         U_k[k] = u_k[0];
@@ -439,9 +443,4 @@ double ALILQGames::getStageCost(const int i, const int k)
 double ALILQGames::getTerminalCost(const int i)
 {
     return pc[i]->TerminalCost(i, x_k[H-1]);
-}
-
-VectorXd ALILQGames::getGoalState(const int i, const int k) 
-{
-    return pc[i]->NAgentGoalChange(k);
 }

@@ -12,6 +12,7 @@
 #include "GLFW/glfw3.h"
 
 
+
 using namespace std;
 using std::chrono::high_resolution_clock;
 using std::chrono::duration_cast;
@@ -29,6 +30,10 @@ void change_clear_color(float r, float g, float b) {
 
 int main(){
 
+    // std::vector<int> v = {1,2,3,4,5,5};
+    // std::for_each(std::execution::par_unseq, v.begin(), v.end(),
+    // [](int& x) { x = x * x; });
+
     // ################################# Declaring paramters for solver ######################################
     int nx = 4;                     
     int nu = 2;                     
@@ -39,7 +44,7 @@ int main(){
     double dt = 0.1;               
 
     SolverParams params;                                // load param stuct (holds "most" solver paramters)
-    params.H_all = 500;                                 // horizon length
+    params.H_all = 200;                                 // horizon length
     params.H = 200;                                     // MPC horizon length
     params.MPC = true;                                  // Solve in RH fashion
     params.dt = 0.1;                                    // discretization time
@@ -128,27 +133,19 @@ int main(){
     VectorXd x0(Nx);
 
     x0 << 
-        1.5, 0.0, M_PI_2, 0.0,        // Agent 1
+        1.5, 0.5, M_PI_2, 0.0,        // Agent 1
         3.0, 0.0, M_PI_2, 0.0,        // Agent 2
-        4.5, 0.0, M_PI_2, 0.0;        // Agent 3
-    // x0 << 
-    //     1.5, 0.5, M_PI_2, 0.0,        // Agent 1
-    //     3.0, 0.0, M_PI_2, 0.0,        // Agent 2
-    //     4.5, 0.5, M_PI_2, 0.0;        // Agent 3
+        4.5, 0.5, M_PI_2, 0.0;        // Agent 3
     
     params.x0 = x0;
     
     // Players' goal state
     VectorXd xgoal(Nx);
-    xgoal <<
-        4.5, 5.0, M_PI_2, 0.0,          // Agent 1
-        3.0, 5.0, M_PI_2, 0.0,          // Agent 2   
-        1.5, 5.0, M_PI_2, 0.0;          // Agent 3
     
-    // xgoal <<
-    //     1.5, 4.5, M_PI_2, 0.0,          // Agent 3
-    //     3.0, 5.0, M_PI_2, 0.0,          // Agent 2   
-    //     4.5, 4.5, M_PI_2, 0.0;
+    xgoal <<
+        1.5, 4.5, M_PI_2, 0.0,          // Agent 3
+        3.0, 5.0, M_PI_2, 0.0,          // Agent 2   
+        4.5, 4.5, M_PI_2, 0.0;
 
     VectorXd xfgoal(Nx);
 
@@ -163,10 +160,10 @@ int main(){
     RotGoalOrigin << 3.0, 2.5;
 
     OracleParams oracleparams;
-    // oracleparams.GoalisChanging = true;
-    // params.isGoalChanging = true;
+    oracleparams.GoalisChanging = true;
+    params.isGoalChanging = true;
     oracleparams.x0goal = xgoal;
-    oracleparams.xfgoal = xgoal;
+    oracleparams.xfgoal = xfgoal;
     oracleparams.n_agents = n_ag;
     oracleparams.RotGoalOrigin = RotGoalOrigin;
 
@@ -199,12 +196,12 @@ int main(){
     // construct the main solver
     Solver* alilqgame = new ALILQGames(params, Npm, ptr_cost, al);                    // Declare pointer to the ILQR class.
 
-
     // solve the problem
     // auto t0 = high_resolution_clock::now();
     alilqgame -> recedingHorizon(params, x0);
     // auto t1 = high_resolution_clock::now();
-
+    
+    // std::cout << "Goal Out: " << ptr_cost[1]->NAgentGoalChange(0) << "\n";
     // /* Getting number of milliseconds as a double. */
     // duration<double, std::milli> ms_double = t1 - t0;
     // cout << ms_double.count() << "ms\n";

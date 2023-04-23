@@ -165,7 +165,7 @@ int main(){
     AL* al = new AL(params, ptr_constr);
 
     // construct the main solver
-    ALILQGames* alilqgame = new ALILQGames(params, Npm, ptr_cost, al);                    // Declare pointer to the ILQR class.
+    Solver* alilqgame = new ALILQGames(params, Npm, ptr_cost, al);                    // Declare pointer to the ILQR class.
 
 
     // solve the problem

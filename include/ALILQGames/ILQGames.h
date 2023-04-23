@@ -15,9 +15,9 @@ class ILQGames : public Solver
         // Pass a Nplayer Model system, and a vector of costs of each player
 
         ILQGames(SolverParams& params, NPlayerModel* ptr_model, 
-                    vector<shared_ptr<Cost>> ptr_costs) : pc(move(ptr_costs))
+                    vector<shared_ptr<Cost>> ptr_costs) : Solver(ptr_model, ptr_costs)
         {
-            Nmodel.reset(ptr_model);                 // reset shared pointer to the model 
+            // Nmodel.reset(ptr_model);                 // reset shared pointer to the model 
             dt = params.dt;
             H = params.H;
 
@@ -118,8 +118,8 @@ class ILQGames : public Solver
         double getTerminalCost(const int i) override;
    
 
-        vector<shared_ptr<Cost>> pc;  
-        shared_ptr<NPlayerModel> Nmodel;                   // N player model; // change this
+        // vector<shared_ptr<Cost>> pc;  
+        // shared_ptr<NPlayerModel> Nmodel;                   // N player model; // change this
 
 
         double dt;                                   // delta t

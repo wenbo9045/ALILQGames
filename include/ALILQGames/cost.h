@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cassert>  
 #include "SolverParams.h"
+#include "utils.h"
 
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
@@ -14,6 +15,7 @@ using Eigen::MatrixXd;
 
 struct Cost
 {
+
     virtual ~Cost() = default;
 
     virtual double StageCost(const int i, const VectorXd& x, const VectorXd& u) = 0;                          // cost function
@@ -33,8 +35,16 @@ struct Cost
 
     virtual void TerminalCostHessian(const int i, MatrixXd& lxx, const VectorXd& x) = 0;
 
+    virtual bool setGoal(const int k) {return false;};
+
+    virtual void BezierCurveGoal(const std::vector<Agent>& agent_pts, const int k, const int H) {};
+
+    virtual void setCtrlPts(std::vector<Agent>& agent_pts) {};
+
+    // virtual bool NAgentGoalChange(SolverParams& params, std::vector<float> control_pts) {};
+
     // Fix this cheap hack to suppress warnings
-    virtual VectorXd NAgentGoalChange(int k) 
+    virtual VectorXd getGoal() 
     {
         VectorXd xtemp = VectorXd::Zero(8);
         return xtemp;

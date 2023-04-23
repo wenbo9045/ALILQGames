@@ -22,15 +22,14 @@ class ALILQGames : public Solver
 
         ALILQGames(SolverParams& params, NPlayerModel* ptr_model, 
                     vector<shared_ptr<Cost>> ptr_costs,
-                    AL* ptr_al) : pc(move(ptr_costs)), al(move(ptr_al))
+                    AL* ptr_al) : Solver(ptr_model, ptr_costs), al(move(ptr_al))
         {
-            Nmodel.reset(ptr_model);                 // reset shared pointer to the model 
+            // Nmodel.reset(ptr_model);                 // reset shared pointer to the model 
             dt = params.dt;
             H = params.H;                            // MPC horizon
 
             k_now = 0;
             isMPC = params.MPC;
-            isGoalChanging = params.isGoalChanging;
 
             if (isMPC)                         // If we are solving with MPC
             {
@@ -126,8 +125,8 @@ class ALILQGames : public Solver
             }
         }
 
-        vector<shared_ptr<Cost>> pc;  
-        shared_ptr<NPlayerModel> Nmodel;                   // N player model; // change this
+        // vector<shared_ptr<Cost>> pc;  
+        // shared_ptr<NPlayerModel> Nmodel;                   // N player model; // change this
         shared_ptr<AL> al;
 
         ALILQGames();                                     // Constructor
@@ -168,7 +167,6 @@ class ALILQGames : public Solver
 
         double getTerminalCost(const int i) override;
 
-        VectorXd getGoalState(const int i, const int k) override;
 
         double dt;                                   // delta t
 
@@ -180,7 +178,7 @@ class ALILQGames : public Solver
 
     private:
 
-        bool isMPC, isGoalChanging;
+        bool isMPC;
 
         vector<VectorXd> X_k;                  // States over the entire Horizon 
 

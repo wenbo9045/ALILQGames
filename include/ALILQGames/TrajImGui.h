@@ -16,7 +16,8 @@ using namespace std;
 class TrajImGui : public UseImGui {
 public:
 	virtual void Update(SolverParams& params, Solver* solver) override {
-
+		
+		
 		// Solver stuff
 		int H = params.H - 1;
 		int n_agents = params.n_agents;
@@ -32,8 +33,6 @@ public:
 
 
 		ImGui::Begin("TrajImGui");              						// Create a window called "TrajImGui" and append into it.
-
-
 
 
 

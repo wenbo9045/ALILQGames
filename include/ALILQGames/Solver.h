@@ -3,11 +3,16 @@
 #include <Eigen/Dense>
 #include <iostream>
 #include <cassert>
+#include <vector>
 #include <memory>
 #include "SolverParams.h"
+#include "NPlayerModel.h"
+#include "cost.h"
 
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
+
+using namespace std;
 
 
 /*
@@ -53,11 +58,15 @@ struct Solver
 
     virtual double getTerminalCost(const int i) = 0;
 
-    // Fix this cheap hack to remove warnings
-    virtual VectorXd getGoalState(const int i, const int k) 
+    shared_ptr<Cost> getCostPtr(const int i)
     {
-        VectorXd xtemp = VectorXd::Zero(8);
-        return xtemp;
+        return pc[i];
     };
+
+
+    protected:
+        Solver(NPlayerModel* ptr_model, vector<shared_ptr<Cost>> ptr_costs) : pc(move(ptr_costs)), Nmodel(move(ptr_model)) {}
+        vector<shared_ptr<Cost>> pc;  
+        shared_ptr<NPlayerModel> Nmodel;                   // N player model; // change this    
 
 };

@@ -2,6 +2,7 @@
 
 #include "cost.h"
 #include "OracleParams.h"
+#include "SolverParams.h"
 
 class DiffDriveCost : public Cost {
     
@@ -14,18 +15,23 @@ class DiffDriveCost : public Cost {
             QN = QNi;
             R = Rij;
             xgoal = oracleparams.x0goal;
+            isGoalChanging = oracleparams.GoalisChanging;
 
-            if (oracleparams.GoalisChanging){
-                xfgoal = oracleparams.xfgoal;
-                x0goal = oracleparams.x0goal;
-                GoalOrigin = oracleparams.RotGoalOrigin;
-                const float dx = GoalOrigin(0) - x0goal(0);
-                const float dy = GoalOrigin(1) - x0goal(1);
-                Radius = std::sqrt(dx*dx + dy*dy);
 
-                nx = xfgoal.rows()/oracleparams.n_agents;
+            if (isGoalChanging){
+                
+                // x0goal = oracleparams.x0goal;
+                // xfgoal = oracleparams.xfgoal;
+                // GoalOrigin = oracleparams.RotGoalOrigin;
+                // const float dx = GoalOrigin(0) - x0goal(0);
+                // const float dy = GoalOrigin(1) - x0goal(1);
+                // Radius = std::sqrt(dx*dx + dy*dy);
+                n_agents = oracleparams.n_agents;
+                agent_pts_.reserve(n_agents);
 
-                phi.resize(oracleparams.n_agents);
+                nx = xgoal.rows()/n_agents;
+
+                // phi.resize(oracleparams.n_agents);
             }
             Nx = Q.rows();
             Nu = R.rows();
@@ -85,35 +91,114 @@ class DiffDriveCost : public Cost {
             lxx = QN;
         }
 
-        VectorXd NAgentGoalChange(int k) override
-        {
-            const float kf = 450.0;                         // where the final goal will be at time tf
 
-            if (k > 450.0)
-                k = 450.0;  
+        // VectorXd NAgentGoalChange(int k) override
+        // {
+        //     const float kf = 450.0;                         // where the final goal will be at time tf
+
+        //     std::cout << "GOAL " << xgoal(1) << "\n";
+        //     if (k > 450.0)
+        //         k = 450.0;  
             
-            // x1(t) = Rcos(omega1*t + phi1)
-            // y1(t) = Rsin(omega1*t + phi2)
-            // Initial and Final Conditions x1(0) = x0goal[1], y1(0) = x0goal[2]
-        
-            for (std::size_t i = 0; i < phi.size(); i++)
+        //     // x1(t) = Rcos(omega1*t + phi1)
+        //     // y1(t) = Rsin(omega1*t + phi2)
+        //     // Initial and Final Conditions x1(0) = x0goal[1], y1(0) = x0goal[2]
+
+        //     for (std::size_t i = 0; i < phi.size(); i++)
+        //     {
+        //         const int inx = i*nx;
+
+        //         // std::cout << GoalOrigin << "\n";
+        //         phi[i] = acos((x0goal(inx) - GoalOrigin(0))/Radius);
+
+        //         const double omega1 = (acos((xfgoal(inx) - GoalOrigin(0))/Radius) - phi[i])/kf;
+
+        //         // X coordinate of goal
+        //         xgoal(inx) = Radius*cos(omega1*k + phi[i]) + GoalOrigin(0);
+        //         // Y coordinate of goal
+        //         phi[i] = asin((x0goal(inx+1) - GoalOrigin(1))/Radius);
+
+        //         const double omega2 = (asin((xfgoal(inx + 1) - GoalOrigin(1))/Radius) - phi[i])/kf;
+        //         xgoal(1+inx) = Radius*sin(omega2*k + phi[i]) + GoalOrigin(1); 
+
+        //     }
+
+        //     return xgoal;
+
+        // }
+
+        void setCtrlPts(std::vector<Agent>& agent_pts) override{
+
+            agent_pts_ = agent_pts;
+        }
+
+        void BezierCurveGoal(const std::vector<Agent>& agent_pts, const int k, const int H) override{
+            
+            const float t = (float)k / (float)H;
+            switch (agent_pts[1].control_pts.size())
             {
-                const int inx = i*nx;
+            case 1:
+                for (int i = 0; i < n_agents; i++)
+                {
+                    xgoal(i*nx) = agent_pts[i].control_pts[0].x;
+                    xgoal(i*nx + 1) = agent_pts[i].control_pts[0].y;
+                }
+                break;
+            
+            case 2:
+                for (int i = 0; i < n_agents; i++)
+                {
+                    const ImVec2 P0 = agent_pts[i].control_pts[0];
+                    const ImVec2 P1 = agent_pts[i].control_pts[1];
+                    xgoal(i*nx) = (1 - t)*P1.x + t*P0.x;
+                    xgoal(i*nx + 1) = (1 - t)*P1.y + t*P0.y;
+                }
+                break;
+            case 3:
+                for (int i = 0; i < n_agents; i++)
+                {
+                    const ImVec2 P0 = agent_pts[i].control_pts[0];
+                    const ImVec2 P1 = agent_pts[i].control_pts[1];
+                    const ImVec2 P2 = agent_pts[i].control_pts[2];
 
-                // std::cout << GoalOrigin << "\n";
+                    xgoal(i*nx) = P1.x + (1 - t)*(1 - t)*(P0.x - P1.x) + t*t*(P2.x - P1.x); 
+                    xgoal(i*nx + 1) = P1.y + (1 - t)*(1 - t)*(P0.y - P1.y) + t*t*(P2.y - P1.y);
+                }
+                break;
+            case 4:
+                for (int i = 0; i < n_agents; i++)
+                {
+                    const ImVec2 P0 = agent_pts[i].control_pts[0];
+                    const ImVec2 P1 = agent_pts[i].control_pts[1];
+                    const ImVec2 P2 = agent_pts[i].control_pts[2];
+                    const ImVec2 P3 = agent_pts[i].control_pts[3];
+                    const float t1 = (1 - t);
+                    const float t2 = t1*t1;
+                    const float t3 = t1*t2;
 
-                phi[i] = acos((x0goal(inx) - GoalOrigin(0))/Radius);
-                const double omega = (acos((xfgoal(0) - GoalOrigin(0))/Radius) - phi[i])/kf;
-
-                // X coordinate of goal
-                xgoal(inx) = Radius*cos(omega*k + phi[i]) + GoalOrigin(0);
-                // Y coordinate of goal
-                xgoal(1+ inx) = Radius*sin(omega*k + phi[i]) + GoalOrigin(1); 
-
+                    xgoal(i*nx) = t3*P0.x + 3*t2*t*P1.x + 3*t1*t*t*P2.x + t*t*t*P3.x;
+                    xgoal(i*nx + 1) = t3*P0.y + 3*t2*t*P1.y + 3*t1*t*t*P2.y + t*t*t*P3.y;
+                }
+                break;
             }
 
-            return xgoal;
 
+            
+        }
+
+        bool setGoal(const int k) override{
+            if (!isGoalChanging)
+            {
+                return false;
+            }
+            else 
+            {
+                return true;
+            }
+        }
+
+        VectorXd getGoal() override{
+            return xgoal;
         }
 
 
@@ -124,17 +209,15 @@ class DiffDriveCost : public Cost {
         MatrixXd R;
         float alpha = 0.2;          // parameter for varying the quadratic costs over the horizon
 
+        std::vector<Agent> agent_pts_;
+
         // Rotating Goal Parameters
-        vector<double> phi;
-        VectorXd x0goal;
+        bool isGoalChanging;
         VectorXd xgoal;
-        VectorXd xfgoal;
-        VectorXd GoalOrigin;
-        double Radius;     
         
         int Nx;
         int Nu;
 
-        int nx;
+        int nx, n_agents;
 
 }; 
