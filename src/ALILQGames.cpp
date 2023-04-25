@@ -382,7 +382,7 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
                 pc[i]->BezierCurveGoal(k, N);
             }
         }
-        
+
         solve(params, X_k[k]);
         X_k[k+1] = x_k[1];
         U_k[k] = u_k[0];
@@ -404,6 +404,8 @@ void ALILQGames::MPCWarmStart(SolverParams& params, const VectorXd& x0)
 {
     recedingHorizon(params, x0);        // run MPC
     H = params.H;                       // reset MPC Horizon
+    k_now = 0;                          // reset iteration index 
+    
     for (int k=0; k<H; k++)
     {
     u_k[k] = U_k[k];                    // Set warm started strategy for the first MPC Horizon

@@ -29,7 +29,8 @@
 
 - Add Target change (High-level decision making oracle based on proximity)
   - High-level oracle can also be an optimal solver that assigns goals based on splines (constant velocity)
-- Fix goal changing 
+- Add a reset function(s) for the solver
+- ~~Fix goal changing~~
 - ~~Forward/Initial Rollout should return total cost (saving multiple for loops)~~
   - ~~Total cost should be calculated with parallel forloop~~
     - ~~https://stackoverflow.com/questions/36246300/parallel-loops-in-c~~
