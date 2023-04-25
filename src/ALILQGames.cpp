@@ -347,11 +347,14 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
 
         // std::for_each(pc.begin(), pc.end(), [&k](shared_ptr<Cost>& agent_i) { 
         //     agent_i->NAgentGoalChange(k); });
-        for (int i=0; i < n_agents; i++)            // For each agent
+        if (params.isGoalChanging)
         {
-            pc[i]->BezierCurveGoal(k, N);
+            for (int i=0; i < n_agents; i++)            // For each agent
+            {
+                pc[i]->BezierCurveGoal(k, N);
+            }
         }
-        
+
         solve(params, X_k[k]);
         X_k[k+1] = x_k[1];
         U_k[k] = u_k[0];
@@ -372,10 +375,14 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
     for (int k = N - Nhor; k < N-1; k++)
     {
         // std::cout << "Kend :" << k << "\n";
-        for (int i=0; i < n_agents; i++)            // For each agent
+        if (params.isGoalChanging)
         {
-            pc[i]->BezierCurveGoal(k, N);
+            for (int i=0; i < n_agents; i++)            // For each agent
+            {
+                pc[i]->BezierCurveGoal(k, N);
+            }
         }
+        
         solve(params, X_k[k]);
         X_k[k+1] = x_k[1];
         U_k[k] = u_k[0];
