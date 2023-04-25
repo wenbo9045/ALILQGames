@@ -44,7 +44,7 @@ int main(){
     double dt = 0.1;               
 
     SolverParams params;                                // load param stuct (holds "most" solver paramters)
-    params.H_all = 200;                                 // horizon length
+    params.H_all = 400;                                 // horizon length
     params.H = 200;                                     // MPC horizon length
     params.MPC = true;                                  // Solve in RH fashion
     params.dt = 0.1;                                    // discretization time

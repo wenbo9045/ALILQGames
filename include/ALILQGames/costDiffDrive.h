@@ -92,41 +92,6 @@ class DiffDriveCost : public Cost {
         }
 
 
-        // VectorXd NAgentGoalChange(int k) override
-        // {
-        //     const float kf = 450.0;                         // where the final goal will be at time tf
-
-        //     std::cout << "GOAL " << xgoal(1) << "\n";
-        //     if (k > 450.0)
-        //         k = 450.0;  
-            
-        //     // x1(t) = Rcos(omega1*t + phi1)
-        //     // y1(t) = Rsin(omega1*t + phi2)
-        //     // Initial and Final Conditions x1(0) = x0goal[1], y1(0) = x0goal[2]
-
-        //     for (std::size_t i = 0; i < phi.size(); i++)
-        //     {
-        //         const int inx = i*nx;
-
-        //         // std::cout << GoalOrigin << "\n";
-        //         phi[i] = acos((x0goal(inx) - GoalOrigin(0))/Radius);
-
-        //         const double omega1 = (acos((xfgoal(inx) - GoalOrigin(0))/Radius) - phi[i])/kf;
-
-        //         // X coordinate of goal
-        //         xgoal(inx) = Radius*cos(omega1*k + phi[i]) + GoalOrigin(0);
-        //         // Y coordinate of goal
-        //         phi[i] = asin((x0goal(inx+1) - GoalOrigin(1))/Radius);
-
-        //         const double omega2 = (asin((xfgoal(inx + 1) - GoalOrigin(1))/Radius) - phi[i])/kf;
-        //         xgoal(1+inx) = Radius*sin(omega2*k + phi[i]) + GoalOrigin(1); 
-
-        //     }
-
-        //     return xgoal;
-
-        // }
-
         void setCtrlPts(std::vector<Agent>& agent_pts) override{
 
             agent_pts_ = agent_pts;
@@ -150,8 +115,8 @@ class DiffDriveCost : public Cost {
                 {
                     const ImVec2 P0 = agent_pts[i].control_pts[0];
                     const ImVec2 P1 = agent_pts[i].control_pts[1];
-                    xgoal(i*nx) = (1 - t)*P1.x + t*P0.x;
-                    xgoal(i*nx + 1) = (1 - t)*P1.y + t*P0.y;
+                    xgoal(i*nx) = (1 - t)*P0.x + t*P1.x;
+                    xgoal(i*nx + 1) = (1 - t)*P0.y + t*P1.y;
                 }
                 break;
             case 3:
@@ -184,6 +149,57 @@ class DiffDriveCost : public Cost {
 
 
             
+        }
+
+        void BezierCurveGoal(const int k, const int H) override{
+            
+            const float t = (float)k / (float)H;
+            switch (agent_pts_[1].control_pts.size())
+            {
+            case 1:
+                for (int i = 0; i < n_agents; i++)
+                {
+                    xgoal(i*nx) = agent_pts_[i].control_pts[0].x;
+                    xgoal(i*nx + 1) = agent_pts_[i].control_pts[0].y;
+                }
+                break;
+            
+            case 2:
+                for (int i = 0; i < n_agents; i++)
+                {
+                    const ImVec2 P0 = agent_pts_[i].control_pts[0];
+                    const ImVec2 P1 = agent_pts_[i].control_pts[1];
+                    xgoal(i*nx) = (1 - t)*P0.x + t*P1.x;
+                    xgoal(i*nx + 1) = (1 - t)*P0.y + t*P1.y;
+                }
+                break;
+            case 3:
+                for (int i = 0; i < n_agents; i++)
+                {
+                    const ImVec2 P0 = agent_pts_[i].control_pts[0];
+                    const ImVec2 P1 = agent_pts_[i].control_pts[1];
+                    const ImVec2 P2 = agent_pts_[i].control_pts[2];
+
+                    xgoal(i*nx) = (1 -t)*(1 -t)*P0.x + 2*(1 - t)*t*P1.x + t*t*P2.x;   
+                    xgoal(i*nx + 1) = (1 -t)*(1 -t)*P0.y + 2*(1 - t)*t*P1.y + t*t*P2.y;
+                }
+                break;
+            case 4:
+                for (int i = 0; i < n_agents; i++)
+                {
+                    const ImVec2 P0 = agent_pts_[i].control_pts[0];
+                    const ImVec2 P1 = agent_pts_[i].control_pts[1];
+                    const ImVec2 P2 = agent_pts_[i].control_pts[2];
+                    const ImVec2 P3 = agent_pts_[i].control_pts[3];
+                    const float t1 = (1 - t);
+                    const float t2 = t1*t1;
+                    const float t3 = t1*t2;
+
+                    xgoal(i*nx) = t3*P0.x + 3*t2*t*P1.x + 3*t1*t*t*P2.x + t*t*t*P3.x;
+                    xgoal(i*nx + 1) = t3*P0.y + 3*t2*t*P1.y + 3*t1*t*t*P2.y + t*t*t*P3.y;
+                }
+                break;
+            }
         }
 
         bool setGoal(const int k) override{

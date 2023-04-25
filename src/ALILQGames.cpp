@@ -333,14 +333,25 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
     const int N = params.H_all;                         // Entire horizon length
     const int Nhor = params.H;                          // MPC horizon
 
+    // ############################### Reset all parameters (should be a function) #############################
+    H = Nhor;
+    k_now = 0;
+    al->ResetDual();
+    al->ResetPenalty();
+
+    std::cout << "Hello! " << "\n";
+
     for (int k=0; k < N - Nhor; k++)
     {
         // std::cout << "K :" << k << "\n";
 
         // std::for_each(pc.begin(), pc.end(), [&k](shared_ptr<Cost>& agent_i) { 
         //     agent_i->NAgentGoalChange(k); });
+        for (int i=0; i < n_agents; i++)            // For each agent
+        {
+            pc[i]->BezierCurveGoal(k, N);
+        }
         
-
         solve(params, X_k[k]);
         X_k[k+1] = x_k[1];
         U_k[k] = u_k[0];
@@ -356,13 +367,15 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
             al->ResetDual();
             al->ResetPenalty();
         }
-        // k_now += 1;
     }
 
     for (int k = N - Nhor; k < N-1; k++)
     {
         // std::cout << "Kend :" << k << "\n";
-
+        for (int i=0; i < n_agents; i++)            // For each agent
+        {
+            pc[i]->BezierCurveGoal(k, N);
+        }
         solve(params, X_k[k]);
         X_k[k+1] = x_k[1];
         U_k[k] = u_k[0];
@@ -374,11 +387,9 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
 
         if (!(k % params.reset_schedule) || (total_cost > 1000000.0))
         {
-            // std::cout << "Reset Penalty\n" << (k % params.reset_schedule) << "\n";
             al->ResetDual();
             al->ResetPenalty();
         }
-        // k_now += 1;
     }
 }
 

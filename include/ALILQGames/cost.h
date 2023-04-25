@@ -37,7 +37,11 @@ struct Cost
 
     virtual bool setGoal(const int k) {return false;};
 
+    // Used for live interaction in ImGui
     virtual void BezierCurveGoal(const std::vector<Agent>& agent_pts, const int k, const int H) {};
+
+    // Used for the solver
+    virtual void BezierCurveGoal(const int k, const int H) {};
 
     virtual void setCtrlPts(std::vector<Agent>& agent_pts) {};
 

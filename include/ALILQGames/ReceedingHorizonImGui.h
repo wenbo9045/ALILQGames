@@ -29,6 +29,8 @@ public:
 		int nu = params.nu;
 
 		static bool show_grid = true;
+		static bool show_bezier_pts = true;
+
 		static ImVec2 scrolling = ImVec2(0.0f, 0.0f);
 
 		static float xs = 0.0f;
@@ -55,9 +57,19 @@ public:
 		ImGui::Begin("TrajImGui");              						// Create a window called "TrajImGui" and append into it.
 
 
-
+		if (ImGui::Button("Solve"))
+		{
+			for (int i = 0; i < n_agents; i++)
+			{
+				solver -> ChangeStrategy(i, deltaStrategy);
+				solver->getCostPtr(i)->setCtrlPts(agents);
+			}
+			solver->recedingHorizon(params, params.x0);
+		}
 
 		ImGui::Checkbox("Show grid", &show_grid);
+		ImGui::Checkbox("Show Bezier Pts", &show_bezier_pts);
+
 
 		ImGui::SliderFloat("AgentPosx", &xs, 0.0f, H_all*1.0f);            	// Slider for trajectory iterate
 		ImGui::SliderFloat("DeltaStrategy", &deltaStrategy, -1.0f, 1.0f);            	// Slider for trajectory iterate
@@ -134,9 +146,6 @@ public:
 				// pts_y.clear();
 				const float goalX = AllGoal(i*nx);
 				const float goalY = AllGoal(i*nx + 1);
-
-				std::cout << "Hello \n";
-
 
 				agents.push_back(Agent());
 				agents[i].Idxs.push_back(concat(i,0));
@@ -321,19 +330,20 @@ public:
 
 				// ImVec2 GoalPts = offset + PositionToWindowCoordinates(agents[i].control_pts[j]);
 				// draw_list->AddCircleFilled(GoalPts, agent_radius, IM_COL32(78, 100, 40, 255));
-
-				if (i == selected_player_)
+				if (show_bezier_pts)
 				{
-					agent_i_color = ImColor(IM_COL32(78, 233, 40, 255));
+					if (i == selected_player_)
+					{
+						agent_i_color = ImColor(IM_COL32(78, 233, 40, 255));
+					}
+					else
+					{
+						agent_i_color = ImColor(IM_COL32(255, 255, 0, 255));
+					}
+					// std::cout << agents[i].control_pts[j].x << "\n";
+					draw_list->AddRectFilled(node_rect_min, node_rect_max, agent_i_color, 20.0f);
+					draw_list->AddRect(node_rect_min, node_rect_max, agent_i_color, 20.0f);
 				}
-				else
-				{
-					agent_i_color = ImColor(IM_COL32(255, 255, 0, 255));
-				}
-				// std::cout << agents[i].control_pts[j].x << "\n";
-				draw_list->AddRectFilled(node_rect_min, node_rect_max, agent_i_color, 20.0f);
-        		draw_list->AddRect(node_rect_min, node_rect_max, agent_i_color, 20.0f);
-
         		// ImGui::SetCursorScreenPos(agent_pos);
 				// ImGui::InvisibleButton("agent", ImVec2(15.3,15.3));
 				// draw_list->AddCircleFilled(agent_pos, agent_radius, IM_COL32(255, 255, 0, 255));
