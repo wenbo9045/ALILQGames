@@ -22,7 +22,7 @@ project(${CMAKE_PROJECT_NAME})               # Name of project
 
 add_executable(3PlayerDiffDriveImguiALILQGame 3PlayerDiffDriveImguiALILQGame.cpp)
 
-# add_executable(3PlayerDiffDriveImguiALILQGameReceding 3PlayerDiffDriveImguiALILQGameReceding.cpp)
+add_executable(3PlayerDiffDriveImguiALILQGameReceding 3PlayerDiffDriveImguiALILQGameReceding.cpp)
 
 add_executable(3AgentALILQGameRHGoalChange 3AgentALILQGameRHGoalChange.cpp)
 
@@ -75,12 +75,12 @@ target_link_libraries(3PlayerDiffDriveImguiALILQGame
     glad
     ALILQGames)
 
-# target_link_libraries(3PlayerDiffDriveImguiALILQGameReceding
-#     PRIVATE                             # private dependency of the main executable (exectubales are usually private)
-#     imgui 
-#     glfw 
-#     glad
-#     ALILQGames)
+target_link_libraries(3PlayerDiffDriveImguiALILQGameReceding
+    PRIVATE                             # private dependency of the main executable (exectubales are usually private)
+    imgui 
+    glfw 
+    glad
+    ALILQGames)
 
 target_link_libraries(3AgentALILQGameRHGoalChange
     PRIVATE                             # private dependency of the main executable (exectubales are usually private)

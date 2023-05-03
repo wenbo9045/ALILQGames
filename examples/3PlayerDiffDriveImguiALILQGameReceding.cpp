@@ -74,9 +74,9 @@ int main(){
     // collision avoidance radius for each agent: [r1: 2.0, r2: 2.0], where 1 and 2 are the agents
     VectorXd r_avoid(n_ag);
 
-    r_avoid(0) = 0.5;                                                   
-    r_avoid(1) = 0.5;
-    r_avoid(2) = 0.5;
+    r_avoid(0) = 0.4;                                                   
+    r_avoid(1) = 0.4;
+    r_avoid(2) = 0.4;
 
     // Player 1 Quadratic costs
 
@@ -87,7 +87,7 @@ int main(){
 
     MatrixXd QN1 = MatrixXd::Zero(Nx, Nx);
     QN1.block(0, 0, nx, nx) = 20.0*MatrixXd::Identity(nx, nx);
-    QN1(2,2) = 0.0;
+    QN1(2,2) = 3.0;
 
     
     MatrixXd R1 = MatrixXd::Zero(Nu, Nu);
@@ -102,7 +102,7 @@ int main(){
 
     MatrixXd QN2 = MatrixXd::Zero(Nx, Nx);
     QN2.block(1*nx, 1*nx, nx, nx) = 20.0*MatrixXd::Identity(nx, nx);
-    QN2(6,6) = 0.0;
+    QN2(6,6) = 3.0;
 
     
     MatrixXd R2 = MatrixXd::Zero(Nu, Nu);
@@ -117,7 +117,7 @@ int main(){
 
     MatrixXd QN3 = MatrixXd::Zero(Nx, Nx);
     QN3.block(2*nx, 2*nx, nx, nx) = 20.0*MatrixXd::Identity(nx, nx);
-    QN3(10,10) = 0.0;
+    QN3(10,10) = 3.0;
 
     
     MatrixXd R3 = MatrixXd::Zero(Nu, Nu);
@@ -127,14 +127,14 @@ int main(){
     // Players' initial state
     VectorXd x0(Nx);
 
-    x0 << 
-        1.5, 0.0, M_PI_2, 0.0,        // Agent 1
-        3.0, 0.0, M_PI_2, 0.0,        // Agent 2
-        4.5, 0.0, M_PI_2, 0.0;        // Agent 3
     // x0 << 
-    //     1.5, 0.5, M_PI_2, 0.0,        // Agent 1
+    //     1.5, 0.0, M_PI_2, 0.0,        // Agent 1
     //     3.0, 0.0, M_PI_2, 0.0,        // Agent 2
-    //     4.5, 0.5, M_PI_2, 0.0;        // Agent 3
+    //     4.5, 0.0, M_PI_2, 0.0;        // Agent 3
+    x0 << 
+        1.5, 0.5, M_PI_2, 0.0,        // Agent 1
+        3.0, 0.0, M_PI_2, 0.0,        // Agent 2
+        4.5, 0.5, M_PI_2, 0.0;        // Agent 3
     
     params.x0 = x0;
     

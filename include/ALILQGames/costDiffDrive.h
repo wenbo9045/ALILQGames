@@ -202,13 +202,15 @@ class DiffDriveCost : public Cost {
             }
         }
 
-        bool setGoal(const int k) override{
+        bool setGoal(const VectorXd& xgoal_in) override{
             if (!isGoalChanging)
             {
+                std::cout << " Parameter Goal Changing is set to false!\n";
                 return false;
             }
             else 
             {
+                xgoal = xgoal_in;
                 return true;
             }
         }

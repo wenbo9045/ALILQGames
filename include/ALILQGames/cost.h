@@ -35,7 +35,7 @@ struct Cost
 
     virtual void TerminalCostHessian(const int i, MatrixXd& lxx, const VectorXd& x) = 0;
 
-    virtual bool setGoal(const int k) {return false;};
+    virtual bool setGoal(const VectorXd& xgoal_in) {return false;};
 
     // Used for live interaction in ImGui
     virtual void BezierCurveGoal(const std::vector<Agent>& agent_pts, const int k, const int H) {};
