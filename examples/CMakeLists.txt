@@ -24,8 +24,13 @@ add_executable(3PlayerDiffDriveImguiALILQGame 3PlayerDiffDriveImguiALILQGame.cpp
 
 add_executable(3PlayerDiffDriveImguiALILQGameReceding 3PlayerDiffDriveImguiALILQGameReceding.cpp)
 
+add_executable(3Player3DModelDiffDriveImguiALILQGameReceding 3Player3DModelDiffDriveImguiALILQGameReceding.cpp)
+
 add_executable(3AgentALILQGameRHGoalChange 3AgentALILQGameRHGoalChange.cpp)
 
+add_executable(5PlayerDiffDriveImguiALILQGameReceding 5PlayerDiffDriveImguiALILQGameReceding.cpp)
+
+add_executable(5Player3DModelDiffDriveImguiALILQGameReceding 5Player3DModelDiffDriveImguiALILQGameReceding.cpp)
 
 # Link executable to ALILQGames library
 # target_link_libraries(main
@@ -82,6 +87,13 @@ target_link_libraries(3PlayerDiffDriveImguiALILQGameReceding
     glad
     ALILQGames)
 
+target_link_libraries(3Player3DModelDiffDriveImguiALILQGameReceding
+    PRIVATE                             # private dependency of the main executable (exectubales are usually private)
+    imgui 
+    glfw 
+    glad
+    ALILQGames)
+
 target_link_libraries(3AgentALILQGameRHGoalChange
     PRIVATE                             # private dependency of the main executable (exectubales are usually private)
     imgui 
@@ -89,3 +101,16 @@ target_link_libraries(3AgentALILQGameRHGoalChange
     glad
     ALILQGames)
 
+target_link_libraries(5PlayerDiffDriveImguiALILQGameReceding
+    PRIVATE                             # private dependency of the main executable (exectubales are usually private)
+    imgui 
+    glfw 
+    glad
+    ALILQGames)
+
+target_link_libraries(5Player3DModelDiffDriveImguiALILQGameReceding
+    PRIVATE                             # private dependency of the main executable (exectubales are usually private)
+    imgui 
+    glfw 
+    glad
+    ALILQGames)

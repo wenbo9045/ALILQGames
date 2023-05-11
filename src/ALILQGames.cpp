@@ -249,6 +249,8 @@ void ALILQGames::solve(SolverParams& params, const VectorXd& x0)
         initial_rollout(x0);
         iter_ = 0;
 
+        std::cout << "Hello! " << "\n";
+
         // Outer loop is an augmented lagrangian
         for(size_t outer_iter=0; outer_iter < params.max_iter_al; outer_iter++)
         {
@@ -338,8 +340,6 @@ void ALILQGames::recedingHorizon(SolverParams& params, const VectorXd& x0)
     k_now = 0;
     al->ResetDual();
     al->ResetPenalty();
-
-    std::cout << "Hello! " << "\n";
 
     for (int k=0; k < N - Nhor; k++)
     {

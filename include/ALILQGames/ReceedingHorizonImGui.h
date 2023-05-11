@@ -133,7 +133,7 @@ public:
 
 		ImGuiIO& io = ImGui::GetIO();
 
-		const float agent_radius = 10.0;
+		const float agent_radius = 0.20*PtoW;
 
 		ImVec2 offset = ImGui::GetCursorScreenPos() + scrolling;
 

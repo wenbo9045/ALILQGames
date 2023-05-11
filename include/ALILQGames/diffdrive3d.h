@@ -3,8 +3,8 @@
 #include "model.h"
 
 
-// State x: [x, y, ẋ, ẏ]
-// Input u: [FX, Fy]
+// State x: [x, y, theta]
+// Input u: [v, omega]
 
 class DiffDriveModel3D : public Model {
 
@@ -15,10 +15,10 @@ class DiffDriveModel3D : public Model {
             nx = 3;
             nu = 2;
             dt = dtin;
+            xdot = VectorXd::Zero(nx);
         }
     
         VectorXd dynamics(const VectorXd &x, const VectorXd &u) override {
-            VectorXd xdot(nx);
 
             xdot(0) = u(0)*std::cos(x[2]);
             xdot(1) = u(0)*std::sin(x[2]);
@@ -26,7 +26,7 @@ class DiffDriveModel3D : public Model {
             return xdot;
         }
 
-        void stateJacob(MatrixXd &fx, const VectorXd& x, const VectorXd& u) override {
+        void stateJacob(Eigen::Ref<MatrixXd> fx, const VectorXd& x, const VectorXd& u) override {            
             assert(fx.rows() == nx);
             assert(fx.cols() == nx);
 
@@ -39,7 +39,7 @@ class DiffDriveModel3D : public Model {
             fx = fx*dt + MatrixXd::Identity(nx, nx);
         }
 
-        void controlJacob(MatrixXd &fu, const VectorXd& x, const VectorXd& u) override {
+        void controlJacob(Eigen::Ref<MatrixXd> fu, const VectorXd& x, const VectorXd& u) override {
             assert(fu.rows() == nx);
             assert(fu.cols() == nu);
 
@@ -53,6 +53,5 @@ class DiffDriveModel3D : public Model {
         }
 
     private:
-        float mass = 1.0;
-        float damp = 0.1;
+        VectorXd xdot;
 };
