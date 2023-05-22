@@ -1,5 +1,7 @@
 #pragma once
 using Eigen::VectorXd;
+#include <iostream>
+#include <string>
 
 /*
     Struct for Solver (low-level) parameters
@@ -19,6 +21,7 @@ struct SolverParams
     int Nx;                             // total number of concatenated states
     int Nu;                             // total number of controls
     VectorXd x0;                        // initial state
+    std::string discetizer = "Euler";        
 
     // ILQGames Solver params
     int max_iter_ilq = 100;             // Maximum number of iterations for ILQGames before terminating

@@ -165,19 +165,19 @@ int main(){
     VectorXd x0(Nx);
 
 
-    // x0 << 
-    //     0.5, 1.5,     M_PI/7.0, 0.0,        // Agent 1
-    //     1.5, 0.5,     M_PI/3.0, 0.0,        // Agent 2
-    //     3.0, 0.0,     M_PI/2.0, 0.0,        // Agent 3
-    //     4.5, 0.5, 2.0*M_PI/3.0, 0.0,        // Agent 4
-    //     5.5, 1.5, 6.0*M_PI/7.0, 0.0;        // Agent 5
-
     x0 << 
         0.5, 1.5,     M_PI/7.0, 0.0,        // Agent 1
-        1.0, 0.5,     M_PI/3.0, 0.0,        // Agent 2
-        2.0, 0.0,     M_PI/2.0, 0.0,        // Agent 3
-        3.0, 0.5, 2.0*M_PI/3.0, 0.0,        // Agent 4
-        3.5, 1.5, 6.0*M_PI/7.0, 0.0;        // Agent 5
+        1.5, 0.5,     M_PI/3.0, 0.0,        // Agent 2
+        3.0, 0.0,     M_PI/2.0, 0.0,        // Agent 3
+        4.5, 0.5, 2.0*M_PI/3.0, 0.0,        // Agent 4
+        5.5, 1.5, 6.0*M_PI/7.0, 0.0;        // Agent 5
+
+    // x0 << 
+    //     0.5, 1.5,     M_PI/7.0, 0.0,        // Agent 1
+    //     1.0, 0.5,     M_PI/3.0, 0.0,        // Agent 2
+    //     2.0, 0.0,     M_PI/2.0, 0.0,        // Agent 3
+    //     3.0, 0.5, 2.0*M_PI/3.0, 0.0,        // Agent 4
+    //     3.5, 1.5, 6.0*M_PI/7.0, 0.0;        // Agent 5
     
     params.x0 = x0;
     
@@ -188,19 +188,19 @@ int main(){
     //     3.0, 5.0, M_PI_2, 0.0,          // Agent 2   
     //     1.5, 5.0, M_PI_2, 0.0;          // Agent 3
     
-    // xgoal << 
-    //     5.5, 4.0,     M_PI/7.0, 0.0,  
-    //     4.5, 5.0,     M_PI/3.0, 0.0,     
-    //     3.0, 5.5,     M_PI/2.0, 0.0,
-    //     1.5, 5.0, 2.0*M_PI/3.0, 0.0,
-    //     0.5, 4.0, 6.0*M_PI/7.0, 0.0;
-
     xgoal << 
-        3.5, 2.5,     M_PI/7.0, 0.0,  
-        3.0, 3.25,     M_PI/3.0, 0.0,     
-        2.0, 3.75,     M_PI/2.0, 0.0,
-        1.0, 3.25, 2.0*M_PI/3.0, 0.0,
-        0.5, 2.5, 6.0*M_PI/7.0, 0.0;
+        5.5, 4.0,     M_PI/7.0, 0.0,  
+        4.5, 5.0,     M_PI/3.0, 0.0,     
+        3.0, 5.5,     M_PI/2.0, 0.0,
+        1.5, 5.0, 2.0*M_PI/3.0, 0.0,
+        0.5, 4.0, 6.0*M_PI/7.0, 0.0;
+
+    // xgoal << 
+    //     3.5, 2.5,     M_PI/7.0, 0.0,  
+    //     3.0, 3.25,     M_PI/3.0, 0.0,     
+    //     2.0, 3.75,     M_PI/2.0, 0.0,
+    //     1.0, 3.25, 2.0*M_PI/3.0, 0.0,
+    //     0.5, 2.5, 6.0*M_PI/7.0, 0.0;
 
     VectorXd xfgoal(Nx);
 
@@ -218,7 +218,7 @@ int main(){
     oracleparams.RotGoalOrigin = RotGoalOrigin;
 
     // construct a Differential drive model 
-    Model* ptr_model = new DiffDriveModel4D(dt);                                      // heap allocation
+    Model* ptr_model = new DiffDriveModel4D(params);                                      // heap allocation
 
     // construct a concatenated Differential drive model
     NPlayerModel* Npm = new NPlayerModel(ptr_model, n_ag);

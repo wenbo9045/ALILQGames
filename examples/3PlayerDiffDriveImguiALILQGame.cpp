@@ -139,7 +139,7 @@ int main(){
     oracleparams.x0goal = xgoal;
 
     // construct a Differential drive model 
-    Model* ptr_model = new DiffDriveModel4D(dt);                                      // heap allocation
+    Model* ptr_model = new DiffDriveModel4D(params);                                      // heap allocation
 
     // construct a concatenated Differential drive model
     NPlayerModel* Npm = new NPlayerModel(ptr_model, n_ag);

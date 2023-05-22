@@ -10,11 +10,13 @@ class DiffDriveModel3D : public Model {
 
     public:
 
-        DiffDriveModel3D(double dtin)
+        DiffDriveModel3D(SolverParams& params)
         {
             nx = 3;
             nu = 2;
-            dt = dtin;
+            assert(nx == params.nx);
+            assert(nu == params.nu);
+            dt = params.dt;
             xdot = VectorXd::Zero(nx);
         }
     

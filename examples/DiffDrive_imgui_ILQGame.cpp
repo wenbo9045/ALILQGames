@@ -98,7 +98,7 @@ int main(){
     u << 0.0, 0.0, 0.0, 0.0;
 
     // construct a point mass model 
-    Model* ptr_model = new DiffDriveModel4D(dt);                                      // heap allocation
+    Model* ptr_model = new DiffDriveModel4D(params);                                      // heap allocation
 
     // construct a concatenated point mass model
     NPlayerModel* Npm = new NPlayerModel(ptr_model, n_ag);

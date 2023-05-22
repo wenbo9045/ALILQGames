@@ -183,7 +183,7 @@ int main(){
     oracleparams.RotGoalOrigin = RotGoalOrigin;
 
     // construct a Differential drive model 
-    Model* ptr_model = new DiffDriveModel3D(dt);                                      // heap allocation
+    Model* ptr_model = new DiffDriveModel3D(params);                                      // heap allocation
 
     // construct a concatenated Differential drive model
     NPlayerModel* Npm = new NPlayerModel(ptr_model, n_ag);

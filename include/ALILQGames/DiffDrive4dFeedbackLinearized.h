@@ -1,24 +1,22 @@
 #pragma once
 
-#include "model.h"
-#include "SolverParams.h"
+#include "FeedbackLinearizedModel.h"
 
+
+// Still need to implement it
 // State x: [x, y, theta, v]
 // Input u: [v\dot, omega]
 
-class DiffDriveModel4D : public Model {
+class DiffDrive4dFeedbackLinearized : public FeedbackLinearizedModel {
 
     public:
 
-        DiffDriveModel4D(SolverParams& params)
+        DiffDrive4dFeedbackLinearized(double dtin)
         {
             nx = 4;
             nu = 2;
-            assert(nx == params.nx);
-            assert(nu == params.nu);
-            dt = params.dt;
+            dt = dtin;
             xdot = VectorXd::Zero(nx);
-            discretizer = params.discetizer;
 
         }
     
@@ -42,19 +40,8 @@ class DiffDriveModel4D : public Model {
                 0.0, 0,                     0,              0,
                 0.0, 0,                     0,              0;
             
-            // case "RK4"
             // Discretize Jacobian
             fx = fx*dt + MatrixXd::Identity(nx, nx);
-
-            // switch (discretizer)
-            // {
-            // case "Euler":
-            //     fx = fx*dt + MatrixXd::Identity(nx, nx);
-            //     break;
-            
-            // default:
-            //     break;
-            // }
         }
 
         void controlJacob(Eigen::Ref<MatrixXd> fu, const VectorXd& x, const VectorXd& u) override {
@@ -72,5 +59,4 @@ class DiffDriveModel4D : public Model {
         }
     private:
         VectorXd xdot;
-        std::string discretizer;
 };
