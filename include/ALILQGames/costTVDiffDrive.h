@@ -90,7 +90,7 @@ class DiffDriveTVCost : public Cost {
             else 
             {
                 xgoal = xgoal_in;
-                alpha *= alpha;
+                alpha = alpha*alpha;
                 return true;
             }
         }
@@ -105,7 +105,7 @@ class DiffDriveTVCost : public Cost {
         MatrixXd Q;
         MatrixXd QN;
         MatrixXd R;
-        float alpha;          // parameter for varying the quadratic costs over the horizon
+        double alpha;          // parameter for varying the quadratic costs over the horizon
 
         // Rotating Goal Parameters
         bool isGoalChanging;
