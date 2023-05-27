@@ -21,6 +21,7 @@ struct SolverParams
     int Nx;                             // total number of concatenated states
     int Nu;                             // total number of controls
     VectorXd x0;                        // initial state
+    VectorXd xgoal;                     // goal state
     std::string discetizer = "Euler";        
 
     // ILQGames Solver params
@@ -39,4 +40,5 @@ struct SolverParams
     int reset_schedule = 20;          // resetting dual variable every number of iterations (for MPC)
 
     bool isGoalChanging = false;
+    double tv_cost_alpha = 1.1;               // parameter for time varying cost
 };

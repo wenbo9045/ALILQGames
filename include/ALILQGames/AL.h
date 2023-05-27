@@ -7,6 +7,12 @@
 
 using namespace std;
 
+/**
+ * @brief Augmented Lagrangian object for handling inequality constraints
+ * The constructor takes in the solver parameters and a vector of pointers to 
+ * the global constraints
+**/
+
 class AL
 {
     public:

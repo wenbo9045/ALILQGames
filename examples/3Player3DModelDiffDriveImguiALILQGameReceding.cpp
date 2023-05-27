@@ -1,4 +1,5 @@
 #include "ALILQGames/ALILQGames.h"
+#include "ALILQGames/costTVDiffDrive.h"
 #include "ALILQGames/diffdrive3d.h"
 #include "ALILQGames/NPlayerModel.h"
 #include "ALILQGames/costDiffDrive.h"

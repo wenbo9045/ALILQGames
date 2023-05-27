@@ -9,8 +9,8 @@ using Eigen::VectorXd;
 using Eigen::MatrixXd;
 
 
-/*
-    Base Struct/Class for any Single agent dynamics model
+/**
+    @brief Base Struct/Class for any Single agent dynamics model
 
     dynamics(): base function for handling continous state space linear/nonlinear models
                 with the form ẋ = f(x,u)
@@ -23,7 +23,7 @@ using Eigen::MatrixXd;
 
     RK4(): Integrates dynamics with explicit RK4
             Returns vector of state
-*/
+**/
 
 
 struct Model

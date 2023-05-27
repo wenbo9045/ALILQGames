@@ -9,9 +9,9 @@
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
 
-/*
-    Base cost class for a SINGLE agent
-*/
+/**
+ * @brief Base cost class for a SINGLE agent
+**/
 
 struct Cost
 {

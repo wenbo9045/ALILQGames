@@ -9,7 +9,7 @@ double ILQGames::initial_rollout(const VectorXd& x0)
     for(int k=0; k < H-1; k++)                  
     {
         //u_t[k] = - K_t[k]*x_t[k] - k_t[k];                  // This is not neccasry (just an initial random rollout)
-        x_k[k+1] = Nmodel->RK4(x_k[k], u_k[k] , Nmodel->dt);         // rollout nonlinear dynmaics with policy
+        x_k[k+1] = Nmodel->RK4(x_k[k], u_k[k] , dt);         // rollout nonlinear dynmaics with policy
     }
 
     total_cost = 0.0;
@@ -41,7 +41,7 @@ double ILQGames::forward_rollout(const VectorXd& x0)
         u_k[k] = u_hat[k] - K_k[k]*(x_k[k] - x_hat[k]) - alpha*d_k[k];        // optimal affine policy
         // std::cout << "xhat " << x_hat[k] << "\n";
         // std::cout << "x_t " << x_t[k] << "\n";
-        x_k[k+1] = Nmodel->RK4(x_k[k], u_k[k] , Nmodel->dt);                      // rollout nonlinear dynmaics with policy
+        x_k[k+1] = Nmodel->RK4(x_k[k], u_k[k] , dt);                      // rollout nonlinear dynmaics with policy
 
         // Store Maximum gradient (to check for convergence)
         norm_grad = d_k[k].lpNorm<Eigen::Infinity>();
