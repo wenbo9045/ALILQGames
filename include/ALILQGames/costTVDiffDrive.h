@@ -42,11 +42,11 @@ class DiffDriveTVCost : public Cost {
         double StageCost(const int i, const VectorXd &x, const VectorXd &u) override{
             // double input_cost;
             // for ()
-            return (0.5*(x - xgoal).transpose()*alpha*Q*(x - xgoal) + 0.5*u.transpose()*R*u).sum();       // returns a 1x1 matrix?
+            return (0.5*(x - xgoal).transpose()*Q*(x - xgoal) + 0.5*u.transpose()*R*u).sum();       // returns a 1x1 matrix?
         }
 
         double TerminalCost(const int i, const VectorXd &x) override{
-            return (0.5*(x - xgoal).transpose()*QN*(x - xgoal)).sum();
+            return (0.5*(x - xgoal).transpose()*alpha*QN*(x - xgoal)).sum();
         }
 
         void StageCostGradient(const int i, VectorXd &lx, VectorXd &lu, const VectorXd& x, const VectorXd& u) override{
@@ -55,14 +55,14 @@ class DiffDriveTVCost : public Cost {
             assert(lu.rows() == Nu);
             assert(lu.cols() == 1); 
 
-            lx = alpha*Q*(x - xgoal);
+            lx = Q*(x - xgoal);
             lu = R*u;
         }
 
         void TerminalCostGradient(const int i, VectorXd &lx, const VectorXd& x) override{
             assert(lx.rows() == Nx);
 
-            lx = QN*(x -xgoal);
+            lx = alpha*QN*(x -xgoal);
         }
 
         void StageCostHessian(const int i, MatrixXd &lxx, MatrixXd &luu, const VectorXd& x, const VectorXd& u) override {
@@ -71,14 +71,14 @@ class DiffDriveTVCost : public Cost {
             assert(luu.rows() == Nu);
             assert(luu.cols() == Nu);
 
-            lxx = alpha*Q;
+            lxx = Q;
             luu = R;         
 
         }
 
         void TerminalCostHessian(const int i, MatrixXd &lxx, const VectorXd& x) override {
             assert(lxx.rows() == Nx);
-            lxx = QN;
+            lxx = alpha*QN;
         }
 
         bool setGoal(const VectorXd& xgoal_in) override{
