@@ -1,17 +1,17 @@
 #pragma once
 
-#include "FeedbackLinearizedModel.h"
+#include "FeedbackLinearization.h"
 
 
 // Still need to implement it
 // State x: [x, y, theta, v]
 // Input u: [v\dot, omega]
 
-class DiffDrive4dFeedbackLinearized : public FeedbackLinearizedModel {
+class DiffDrive4dFeedbackLinearization : public FeedbackLinearization {
 
     public:
 
-        DiffDrive4dFeedbackLinearized(double dtin)
+        DiffDrive4dFeedbackLinearization(double dtin)
         {
             nx = 4;
             nu = 2;
