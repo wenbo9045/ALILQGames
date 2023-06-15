@@ -1,5 +1,6 @@
 #include "ALILQGames/ALILQGames.h"
 #include "ALILQGames/pointmass.h"
+#include "ALILQGames/DiffDrive4dFeedbackLinearization.h"
 #include "ALILQGames/NPlayerModel.h"
 #include "ALILQGames/costDiffDrive.h"
 #include "ALILQGames/CollisionCost2D.h"
@@ -61,10 +62,10 @@ int main(){
     // lower & upper state limits
     VectorXd xmin = -100.0*VectorXd::Ones(nx*n_ag);
     VectorXd xmax =  100.0*VectorXd::Ones(nx*n_ag);
-    xmin(3) = -0.3;                                     // min Velocity constraint for agent 1
-    xmin(7) = -0.3;                                     // min Velocity constraint for agent 2
-    xmax(3) =  0.3;                                     // max Velocity constraint for agent 1
-    xmax(7) =  0.3;                                     // max Velocity constraint for agent 2
+    // xmin(3) = -0.3;                                     // min Velocity constraint for agent 1
+    // xmin(7) = -0.3;                                     // min Velocity constraint for agent 2
+    // xmax(3) =  0.3;                                     // max Velocity constraint for agent 1
+    // xmax(7) =  0.3;                                     // max Velocity constraint for agent 2
 
     // collision avoidance radius for each agent: [r1: 2.0, r2: 2.0], where 1 and 2 are the agents
     VectorXd r_avoid(n_ag);
@@ -102,23 +103,35 @@ int main(){
 
     // Initialize a 2 player point mass
 
+    FeedbackLinearization* FL = new DiffDrive4dFeedbackLinearization(params);
+
     // Players' initial state
     VectorXd x0(Nx);
-    // x0 << 5.0, 0.0, M_PI_2, 0.0, 0.0, 5.0, 0.0, 0.0;
-    x0 << 2.5, 0.0, M_PI_2, 0.0, 0.0, 2.5, 0.0, 0.0;
+    // VectorXd zeta0_agent0 = VectorXd::Zero(nx);
+    // VectorXd zeta0_agent1 = VectorXd::Zero(nx);
+    VectorXd zeta0(Nx); 
+    x0 << 2.5, 0.0, M_PI_2, 0.05, 0.0, 2.5, 0.0, 0.05;
+
+    zeta0.segment(0*nx,nx) = FL -> inv_conversion_map(x0.segment(0*nx,nx));
+    zeta0.segment(1*nx,nx) = FL -> inv_conversion_map(x0.segment(1*nx,nx));
+    
+    // zeta0 << zeta0_agent0, zeta0_agent1;
+    std::cout << "Zeta0 " << zeta0 << "\n";
 
     // Players' goal state
     VectorXd xgoal(Nx);
-    // xgoal << 5.0, 10.0, M_PI_2, 0.0, 10.0, 5.0, 0.0, 0.0;
-    xgoal << 2.5, 5.0, M_PI_2, 0.0, 5.0, 2.5, 0.0, 0.0;
+    // VectorXd zeta_goal0 = VectorXd::Zero(nx);
+    // VectorXd zeta_goal1 = VectorXd::Zero(nx);
+    VectorXd zeta_goal(Nx); 
+
+    xgoal << 2.5, 5.0, M_PI_2, 0.04, 5.0, 2.5, 0.0, 0.04;
+    // xgoal << 2.5, 5.0, 0.0, 0.0, 5.0, 2.5, 0.0, 0.0;
+    zeta_goal.segment(0*nx,nx) = FL -> inv_conversion_map(xgoal.segment(0*nx,nx));
+    zeta_goal.segment(1*nx,nx) = FL -> inv_conversion_map(xgoal.segment(1*nx,nx));
 
     OracleParams oracleparams;
     oracleparams.GoalisChanging = false;
-    oracleparams.x0goal = xgoal;
-
-    // not used
-    VectorXd u(Nu);
-    u << 0.0, 0.0, 0.0, 0.0;
+    oracleparams.x0goal = zeta_goal;
 
     // construct a point mass model 
     Model* ptr_model = new PointMass(params);                                      // heap allocation
@@ -133,8 +146,6 @@ int main(){
     ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(oracleparams, Q1, QN1, R1)) );        
     // Player 2 quadratic cost
     ptr_cost.push_back( shared_ptr<Cost> (new DiffDriveCost(oracleparams, Q2, QN2, R2)) );
-    // ptr_cost.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q1, QN1, R1, xgoal, r_avoid)) );   
-    // ptr_cost.push_back( shared_ptr<Cost> (new CollisionCost2D(params, Q2, QN2, R2, xgoal, r_avoid)) );
 
     // vector to store pointers to players' constraints
     vector<shared_ptr<GlobalConstraints>> ptr_constr; 
@@ -149,17 +160,21 @@ int main(){
 
 
     // solve the problem
-    auto t0 = high_resolution_clock::now();
-    alilqgame -> solve(params, x0);
-    auto t1 = high_resolution_clock::now();
+    alilqgame -> solve(params, zeta0);
 
-    /* Getting number of milliseconds as a double. */
-    duration<double, std::milli> ms_double = t1 - t0;
-    cout << ms_double.count() << "ms\n";
+    for (int k=0; k < params.H; k++)
+    {
+        VectorXd x_new(Nx);
+        VectorXd u_new(Nu);
 
-    
+        // from linear to nonlinear
+        x_new.segment(0*nx, nx) = FL -> conversion_map(alilqgame->getState(k).segment(0*nx,nx));
+        x_new.segment(1*nx, nx) = FL -> conversion_map(alilqgame->getState(k).segment(1*nx,nx));
+        
+        // u_new.segment(0*nu, nu) = 
 
-
+        alilqgame -> setState(k, x_new);
+    }
 
 // ################################# Plotting in imgui ##################################################
 //    Setup window

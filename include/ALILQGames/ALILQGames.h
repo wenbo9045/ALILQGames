@@ -149,6 +149,8 @@ class ALILQGames : public Solver
 
         void MPCWarmStart(SolverParams& params, const VectorXd& x0) override;
 
+        void setState(const int k, const VectorXd& x) override;
+
         // Helper functions should probably be universal (in Solver.h)
 
         double TotalCost(const int i);

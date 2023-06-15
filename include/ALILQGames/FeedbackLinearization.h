@@ -18,12 +18,12 @@ struct FeedbackLinearization
 
     virtual ~FeedbackLinearization() = default;
 
-    virtual void decoupling_matrix(MatrixXd& M, const VectorXd& x) = 0;
+    virtual MatrixXd decoupling_matrix(const VectorXd& x) = 0;
 
-    virtual void inverse_decoupling_matrix(MatrixXd& Minv, const VectorXd& x) = 0;
+    virtual MatrixXd inverse_decoupling_matrix(const VectorXd& x) = 0;
     
-    virtual void conversion_map(VectorXd& x, const VectorXd& gamma) = 0;
+    virtual VectorXd conversion_map(const VectorXd& zeta) = 0;
 
-    virtual void inv_conversion_map(VectorXd& gamma, const VectorXd& x) = 0;
+    virtual VectorXd inv_conversion_map(const VectorXd& x) = 0;
 
 };

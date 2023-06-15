@@ -24,10 +24,6 @@ class PointMass : public Model {
     
         VectorXd dynamics(const VectorXd& x, const VectorXd& u) override {
             VectorXd xdot(nx);
-            // ẋ₁ = x[3]
-            // ẍ₁ = -(c/m)*ẋ₁ + u[1]/(m)   
-            // ẏ₁ = x[4]
-            // ÿ₁ = -(c/m)*ẏ₁ + u[2]/(m)  
             xdot(0) = x(2);
             xdot(1) = x(3);
             xdot(2) = -(damp/mass)*x(2) + u(0)/mass;

@@ -14,32 +14,50 @@ class DiffDrive4dFeedbackLinearization : public FeedbackLinearization {
 
         DiffDrive4dFeedbackLinearization(SolverParams& params)
         {
-
+            nx = params.nx;
+            nu = params.nu;
         }
-    
-        void decoupling_matrix(MatrixXd& M, const VectorXd& x) override {
+        
+        // from angular velocity and acceleration to acceleration along x and y
+        MatrixXd decoupling_matrix(const VectorXd& x) override {
+            MatrixXd M(nu, nu);
             M << -x(3)*std::sin(x(2)), std::cos(x(2)),
                   x(3)*std::cos(x(2)), std::sin(x(2));
+            
+            return M;
         }
 
-        void inverse_decoupling_matrix(MatrixXd& Minv, const VectorXd& x) override {
+        // from acceleration along x and y to angular velocity and acceleration
+        MatrixXd inverse_decoupling_matrix(const VectorXd& x) override {
+            MatrixXd Minv(nu, nu);
+
             Minv << -std::sin(x(2))/x(3), std::cos(x(2))/x(3),
                     std::cos(x(2)), std::sin(x(2));
+            return Minv;
 
         }
 
         // State conversion map x = lambda(zeta); zeta to x
-        void conversion_map(VectorXd& x, const VectorXd& zeta) override {
-            const float v_x = zeta(1);
+        VectorXd conversion_map(const VectorXd& zeta) override {
+            VectorXd x(nx);
+            const float v_x = zeta(2);
             const float v_y = zeta(3);
-            // lambda(zeta) = p_x, p_y, /sqrt(v_x^2 + v_y^2), atan2(v_y,v_x)
+            // lambda(zeta) = x, y, theta, v
 
-            x << zeta(0), zeta(2), std::sqrt(v_x*v_x + v_y*v_y), atan2(v_y, v_x); 
+            x << zeta(0), zeta(1), atan2(v_y, v_x), std::sqrt(v_x*v_x + v_y*v_y); 
+            return x;
         }
 
         // x to zeta
-        void inv_conversion_map(VectorXd& zeta, const VectorXd& x) override {
-            zeta << x(0), x(3)*std::cos(x(2)), x(1), x(3)*std::sin(x(2));
+        VectorXd inv_conversion_map(const VectorXd& x) override {
+            VectorXd zeta(nx);
+            // x, y, x_dot, y_dot
+            zeta << x(0), x(1), x(3)*std::cos(x(2)), x(3)*std::sin(x(2));
+            return zeta;
         }
+    
+    private:
+        int nx;
+        int nu;
     
 };

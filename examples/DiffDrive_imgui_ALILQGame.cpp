@@ -105,12 +105,14 @@ int main(){
     // Players' initial state
     VectorXd x0(Nx);
     // x0 << 5.0, 0.0, M_PI_2, 0.0, 0.0, 5.0, 0.0, 0.0;
-    x0 << 2.5, 0.0, M_PI_2, 0.0, 0.0, 2.5, 0.0, 0.0;
+    x0 << 2.5, 0.0, M_PI_2, 0.05, 0.0, 2.5, 0.0, 0.05;
+
 
     // Players' goal state
     VectorXd xgoal(Nx);
     // xgoal << 5.0, 10.0, M_PI_2, 0.0, 10.0, 5.0, 0.0, 0.0;
-    xgoal << 2.5, 5.0, M_PI_2, 0.0, 5.0, 2.5, 0.0, 0.0;
+    // xgoal << 2.5, 5.0, M_PI_2, 0.0, 5.0, 2.5, 0.0, 0.0;
+    xgoal << 2.5, 5.0, M_PI_2, 0.04, 5.0, 2.5, 0.0, 0.04;
 
     OracleParams oracleparams;
     oracleparams.GoalisChanging = false;

@@ -425,6 +425,13 @@ void ALILQGames::ChangeStrategy(const int i, const float delta)
     }
 }
 
+
+void ALILQGames::setState(const int k, const VectorXd& x)
+{
+    x_k[k] = x;
+}
+
+
 VectorXd ALILQGames::getState(const int k)
 {
     return x_k[k];

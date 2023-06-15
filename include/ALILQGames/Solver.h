@@ -46,6 +46,8 @@ struct Solver
 
     virtual void MPCWarmStart(SolverParams& params, const VectorXd& x0) {}
 
+    virtual void setState(const int k, const VectorXd& x) {}
+
     virtual VectorXd getState(const int k) = 0;
 
     virtual VectorXd getControl(const int k) = 0;
