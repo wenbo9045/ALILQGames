@@ -50,8 +50,6 @@ class DiffDriveCost : public Cost {
 
         // TODO: Shouldn't be cost relative to goal
         double StageCost(const int i, const VectorXd &x, const VectorXd &u) override{
-            // double input_cost;
-            // for ()
             return (0.5*(x - xgoal).transpose()*Q*(x - xgoal) + 0.5*u.transpose()*R*u).sum();       // returns a 1x1 matrix?
         }
 

@@ -24,6 +24,7 @@ public:
 		int nx = params.nx;
 		int nu = params.nu;
 
+
 		// render your GUI
 		static float xs = 0.0f;
 		static float deltaStrategy = 0.0f;								// change in strategy for player i
@@ -112,12 +113,12 @@ public:
 			// Note this is only for point mass
 			float x = solver->getState(k_step)[i*nx];
 			float y = solver->getState(k_step)[i*nx + 1];
-			// float xdot = solver->getState(k_step)[i*nx + 2];
-			// float ydot = solver->getState(k_step)[i*nx + 3];
-			// float theta = atan2(xdot, ydot);
+			float xdot = solver->getState(k_step)[i*nx + 2];
+			float ydot = solver->getState(k_step)[i*nx + 3];
+			float theta = atan2(xdot, ydot);
 
 			// for differential drive robot
-			float theta = solver->getState(k_step)[i*nx + 2];
+			// float theta = solver->getState(k_step)[i*nx + 2];
 
 
 			const ImVec2 robotPosition = PositionToWindowCoordinates(x,y);

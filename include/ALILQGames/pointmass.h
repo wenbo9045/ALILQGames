@@ -1,6 +1,7 @@
 #pragma once
 
 #include "model.h"
+#include "SolverParams.h"
 
 
 // State x: [x, y, ẋ, ẏ]
@@ -12,11 +13,13 @@ class PointMass : public Model {
 
         // ~PointMass() {}
 
-        PointMass(double dtin)
+        PointMass(SolverParams& params)
         {
             nx = 4;
             nu = 2;
-            dt = dtin;
+            assert(nx == params.nx);
+            assert(nu == params.nu);
+            dt = params.dt;
         }
     
         VectorXd dynamics(const VectorXd& x, const VectorXd& u) override {

@@ -17,6 +17,9 @@ project(${CMAKE_PROJECT_NAME})               # Name of project
 # add_executable(DiffDrive_imgui DiffDrive_imgui.cpp)
 
 # add_executable(DiffDrive_imgui_ILQGame DiffDrive_imgui_ILQGame.cpp)
+add_executable(DiffDriveFeedbackLin_imgui_ALILQGame DiffDriveFeedbackLin_imgui_ALILQGame.cpp)
+
+# add_executable(homicidal_chauffeur homicidal_chauffeur.cpp)
 
 add_executable(DiffDrive_imgui_ALILQGame DiffDrive_imgui_ALILQGame.cpp)
 
@@ -65,6 +68,19 @@ add_executable(5Player3DModelDiffDriveImguiALILQGameReceding 5Player3DModelDiffD
 #     glfw 
 #     glad
 #     ALILQGames)
+target_link_libraries(DiffDriveFeedbackLin_imgui_ALILQGame
+    PRIVATE                             # private dependency of the main executable (exectubales are usually private)
+    imgui 
+    glfw 
+    glad
+    ALILQGames)
+
+target_link_libraries(DiffDriveFeedbackLin_imgui_ALILQGame
+    PRIVATE                             # private dependency of the main executable (exectubales are usually private)
+    imgui 
+    glfw 
+    glad
+    ALILQGames)
 
 target_link_libraries(DiffDrive_imgui_ALILQGame
     PRIVATE                             # private dependency of the main executable (exectubales are usually private)
