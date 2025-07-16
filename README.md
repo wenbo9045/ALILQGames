@@ -22,6 +22,7 @@
 ```leaks --atExit -- ./3PlayerDiffDriveImguiALILQGame```
 
 ### Similarly, you can use Valgrind on Ubuntu 
+scp -r D:/code/ALILQGames-main ubuntu@43.139.45.239:~/catkin_ws/ALILQGames-main
 
 # TODO:
 
